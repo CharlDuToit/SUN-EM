@@ -66,6 +66,9 @@ function [Const] = sunem_setup(Const)
     % === CMA Interface ===
     addpath([MainPath '/src/CMAinterface']);
     
+    % === ML-MOM Interface ===
+    addpath([MainPath '/src/MLMOMinterface']);
+    
     % ==  Set the executables path % ==
     if (ispc)
         Const.ExecPath = sprintf('%s\\bin\\',MainPath);

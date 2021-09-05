@@ -36,7 +36,7 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
     
     % -- ML-MoM    
     if (Const.runMLMoMsolver)        
-        Solution.mlmom = runMLMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
+        Solution.mlmom = runMLMoMsolver(Const, Solver_setup, zMatrices);
     end%if
 
     % -- C++ MoM (TO-DO: Tameez, perhaps this is a better spot to call your entire MoM C++ solver)

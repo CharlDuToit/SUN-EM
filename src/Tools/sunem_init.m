@@ -121,6 +121,21 @@ function Const = sunem_init(Const, yVectors)
         end
     end
     
+    
+        % ================================    
+    try
+        set = false;
+        if (Const.runMLMoMsolver)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.runMLMoMsolver = false;
+        end
+    end
+    
     % ================================    
     % First check whether the variables exist:
     % -- solStart
