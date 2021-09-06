@@ -11,30 +11,22 @@ Const.QUAD_PTS = 3;
 [Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const);
 [Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
 [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
-z = zMatrices.values;
 
 mlmom = Solution.mlmom;
-%predError = mlmom.predMeanError;
-%unityWeightError = mlmom.unityWeightMeanError;
+predError = mlmom.predMeanError;
+unityWeightError = mlmom.unityWeightMeanError;
 predZ = mlmom.predNonSingZmn;
-unityWeightZ = mlmom.unityNonSingZmn;
+unityWeightZ = mlmom.nonSingUnityWeightZmn;
 refZ = mlmom.refNonSingZmn;
 predRelVal = predZ ./ refZ;
 unityWeightRelVal = unityWeightZ ./ refZ;
 unityWeightSignErrorCount = numel(find(unityWeightRelVal < 0));
 predSignErrorCount = numel(find(predRelVal < 0));
-%numUnclassified = mlmom.numUnclassified;
+numUnclassified = mlmom.numUnclassified;
 varPred = var(predZ);
 varUnityWeight = var(unityWeightZ);
 varRelPred = var(predRelVal);
 varRelUnityWeight = var(unityWeightRelVal);
 avgPredRelVal = sum(predRelVal(:))/numel(unityWeightRelVal);
 avgUnityWeightRelVal = sum(unityWeightRelVal(:))/numel(unityWeightRelVal);
-
-%gridSize = 500;
-%plotTitle = 'Unity weight error';
-%unityWeightDiff = mlmom.unityWeightDiff;
-%unityWeightDiff = log(abs(mlmom.nonSingUnityWeightZmn ./ mlmom.refNonSingZmn));
-%prop = mlmom.nonSingZmnProp;
-%plotError(prop, unityWeightDiff, gridSize, plotTitle);
 

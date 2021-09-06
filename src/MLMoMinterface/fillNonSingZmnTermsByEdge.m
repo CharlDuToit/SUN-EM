@@ -1,7 +1,8 @@
 function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
     Phi_mn_pls_source_pls_matrix, Phi_mn_pls_source_mns_matrix,...
     Amn_pls_source_pls_matrix, Amn_pls_source_mns_matrix,...
-    Amn_mns_source_pls_matrix, Amn_mns_source_mns_matrix, singIndices] = fillNonSingZmnTermsByEdge(Const,Solver_setup)    
+    Amn_mns_source_pls_matrix, Amn_mns_source_mns_matrix,...
+    dist,edge_mm_dir_dot_edge_nn_dir, edge_mm_dir_dot_edge_nn_disp, singIndices] = fillNonSingZmnTermsByEdge(Const,Solver_setup)    
     %FillZMatrixByEdge
     %   Date: 2018.06.10
     %   Usage:
@@ -46,6 +47,16 @@ function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
     sing     = Const.SING;
     eps_0    = Const.EPS_0;
     mu_0     = Const.MU_0;
+    
+    
+    % Extract edge direction
+    edge_nodes = Solver_setup.rwg_basis_functions_shared_edge_nodes;
+    edge_dir = node_coord(edge_nodes(:,1), :) - node_coord(edge_nodes(:,2), :);
+    edge_dir_mag = sqrt(edge_dir(:,1).^2 + edge_dir(:,2).^2 + edge_dir(:,3).^2);
+    edge_dir = edge_dir ./edge_dir_mag; 
+    
+    % Extract the edge midpoints
+    edge_c = Solver_setup.rwg_basis_functions_shared_edge_centre;
 
     % Extract the triangle midpoints
     r_c = Solver_setup.triangle_centre_point;
@@ -70,9 +81,11 @@ function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
     Amn_mns_source_pls_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
     Amn_mns_source_mns_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
     
-    %singIndices = zeros(num_dofs * 3,2);
+    dist = zeros(num_dofs,num_dofs);
+    edge_mm_dir_dot_edge_nn_dir = zeros(num_dofs,num_dofs);
+    edge_mm_dir_dot_edge_nn_disp = zeros(num_dofs,num_dofs);
+    
     singIndices = zeros(num_dofs ,num_dofs);
-    %singIndicesCount = 0;
     singIndicesCalculated = false;
 
     % We will be calculating the Z matrix at each of the various frequencies:
@@ -218,6 +231,13 @@ function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
                     Amn_pls_source_mns_matrix(mm,nn,freq_index) = ell(mm) * 0.5i*omega*dot(Amn_pls_source_mns',rho_c_pls(mm,:));
                     Amn_mns_source_pls_matrix(mm,nn,freq_index) = ell(mm) * 0.5i*omega*dot(Amn_mns_source_pls',rho_c_mns(mm,:));
                     Amn_mns_source_mns_matrix(mm,nn,freq_index) = ell(mm) * 0.5i*omega*dot(Amn_mns_source_mns',rho_c_mns(mm,:)); 
+                    
+                    edge_c_mm  = edge_c(mm, :);
+                    edge_c_nn  = edge_c(nn, :);
+                    disp = edge_c_nn - edge_c_mm;
+                    dist(mm,nn) =  norm(disp);
+                    edge_mm_dir_dot_edge_nn_dir(mm,nn) = dot(edge_dir(mm,:),edge_dir(nn,:) );
+                    edge_mm_dir_dot_edge_nn_disp(mm,nn) = dot( edge_dir(mm,:), disp/dist(mm,nn));
                     
                     %Z.values(mm,nn) = 1i*omega*...
                         %(dot(Amn_pls',rho_c_pls(mm,:))/2 + dot(Amn_mns',rho_c_mns(mm,:))/2) + Phi_mn_mns - Phi_mn_pls;
