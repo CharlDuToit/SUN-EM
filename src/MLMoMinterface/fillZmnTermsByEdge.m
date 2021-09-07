@@ -1,12 +1,9 @@
-function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
-    Phi_mn_pls_source_pls_matrix, Phi_mn_pls_source_mns_matrix,...
-    Amn_pls_source_pls_matrix, Amn_pls_source_mns_matrix,...
-    Amn_mns_source_pls_matrix, Amn_mns_source_mns_matrix,...
-    dist,edge_mm_dir_dot_edge_nn_dir, edge_mm_dir_dot_edge_nn_disp, singIndices] = fillNonSingZmnTermsByEdge(Const,Solver_setup)    
-    %FillZMatrixByEdge
-    %   Date: 2018.06.10
+function [terms, singIndices,...
+    dist,edge_mm_dir_dot_edge_nn_dir, edge_mm_dir_dot_edge_nn_disp ] = fillZmnTermsByEdge(Const,Solver_setup)    
+    %fillZmnTermsByEdge
+    %   Date: 2021.08.07
     %   Usage:
-    %       [Z] = FillZMatrixByEdge(Const,Solver_setup)
+    %       [Z] = fillZmnTermsByEdge(Const,Solver_setup)
     %
     %   Input Arguments:
     %       Const: 
@@ -47,8 +44,7 @@ function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
     sing     = Const.SING;
     eps_0    = Const.EPS_0;
     mu_0     = Const.MU_0;
-    
-    
+        
     % Extract edge direction
     edge_nodes = Solver_setup.rwg_basis_functions_shared_edge_nodes;
     edge_dir = node_coord(edge_nodes(:,1), :) - node_coord(edge_nodes(:,2), :);
@@ -71,6 +67,9 @@ function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
     
     % Allocate some space for our impedance matrix
     %Z.values = complex(zeros(num_dofs,num_dofs,number_of_frequencies)); % Generalized impedance matrix.
+    
+    terms = complex(zeros(num_dofs,num_dofs, 8, number_of_frequencies));
+    
     Phi_mn_mns_source_pls_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
     Phi_mn_mns_source_mns_matrix= complex(zeros(num_dofs,num_dofs,number_of_frequencies));
     Phi_mn_pls_source_pls_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
@@ -113,16 +112,13 @@ function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
 
            
             for nn = 1:num_dofs
-
+                
                 %Only 2 unique triangles
-                if (mm == nn)
-                    if (~singIndicesCalculated)
-                        %singIndicesCount = singIndicesCount + 1;
+                if (~singIndicesCalculated)
+                    if (mm == nn )
                         singIndices(mm, nn) = 1;
-                        %singIndices(singIndicesCount, 1) = mm;
-                        %singIndices(singIndicesCount, 2) = nn;
                     end
-                    continue
+                    %continue
                 end
                 
                 % 2018.06.13: We can use the Equivalent Dipole Method (EDM), if active and only if the distance 
@@ -146,14 +142,11 @@ function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
                     qq_mns = Solver_setup.rwg_basis_functions_triangleMinus(nn);
                     
                     %Only 3 unique triangles
-                    if (pp_pls == qq_pls || pp_pls == qq_mns || pp_mns == qq_pls || pp_mns == qq_mns)                      
-                        if (~singIndicesCalculated)
-                            %singIndicesCount = singIndicesCount + 1;
+                    if (~singIndicesCalculated)                      
+                        if (pp_pls == qq_pls || pp_pls == qq_mns || pp_mns == qq_pls || pp_mns == qq_mns )
                             singIndices(mm, nn) = 1;
-                            %singIndices(singIndicesCount, 1) = mm;
-                            %singIndices(singIndicesCount, 2) = nn;
                         end
-                        continue
+                        %continue
                     end
                 
                     triangle_tn_plus_free_vertex = Solver_setup.rwg_basis_functions_trianglePlusFreeVertex(nn);
@@ -237,7 +230,10 @@ function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
                     disp = edge_c_nn - edge_c_mm;
                     dist(mm,nn) =  norm(disp);
                     edge_mm_dir_dot_edge_nn_dir(mm,nn) = dot(edge_dir(mm,:),edge_dir(nn,:) );
-                    edge_mm_dir_dot_edge_nn_disp(mm,nn) = dot( edge_dir(mm,:), disp/dist(mm,nn));
+                    %avoid divide by zero
+                    if (mm ~= nn)
+                        edge_mm_dir_dot_edge_nn_disp(mm,nn) = dot( edge_dir(mm,:), disp/dist(mm,nn));
+                    end
                     
                     %Z.values(mm,nn) = 1i*omega*...
                         %(dot(Amn_pls',rho_c_pls(mm,:))/2 + dot(Amn_mns',rho_c_mns(mm,:))/2) + Phi_mn_mns - Phi_mn_pls;
@@ -253,8 +249,17 @@ function [Phi_mn_mns_source_pls_matrix, Phi_mn_mns_source_mns_matrix,...
         % Remove empty rows
         singIndicesCalculated = true;
         %singIndices = singIndices(1:singIndicesCount, :);
+        terms(:,:,1,freq_index) = Phi_mn_mns_source_pls_matrix(:,:,freq_index);
+        terms(:,:,2,freq_index) = Phi_mn_mns_source_mns_matrix(:,:,freq_index);
+        terms(:,:,3,freq_index) = Phi_mn_pls_source_pls_matrix(:,:,freq_index);
+        terms(:,:,4,freq_index) = Phi_mn_pls_source_mns_matrix(:,:,freq_index);
+        
+        terms(:,:,5,freq_index) = Amn_pls_source_pls_matrix(:,:,freq_index);
+        terms(:,:,6,freq_index) = Amn_pls_source_mns_matrix(:,:,freq_index);
+        terms(:,:,7,freq_index) = Amn_mns_source_pls_matrix(:,:,freq_index);
+        terms(:,:,8,freq_index) = Amn_mns_source_mns_matrix(:,:,freq_index);
     end %for freq_index = 1:Solver_setup.frequencies.freq_num        
-    
+   
 end %function FillZMatrixByEdge
 
 % =================================================================================
