@@ -13,20 +13,3 @@ Const.QUAD_PTS = 3;
 [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 
 mlmom = Solution.mlmom;
-predError = mlmom.predMeanError;
-unityWeightError = mlmom.unityWeightMeanError;
-predZ = mlmom.predNonSingZmn;
-unityWeightZ = mlmom.nonSingUnityWeightZmn;
-refZ = mlmom.refNonSingZmn;
-predRelVal = predZ ./ refZ;
-unityWeightRelVal = unityWeightZ ./ refZ;
-unityWeightSignErrorCount = numel(find(unityWeightRelVal < 0));
-predSignErrorCount = numel(find(predRelVal < 0));
-numUnclassified = mlmom.numUnclassified;
-varPred = var(predZ);
-varUnityWeight = var(unityWeightZ);
-varRelPred = var(predRelVal);
-varRelUnityWeight = var(unityWeightRelVal);
-avgPredRelVal = sum(predRelVal(:))/numel(unityWeightRelVal);
-avgUnityWeightRelVal = sum(unityWeightRelVal(:))/numel(unityWeightRelVal);
-

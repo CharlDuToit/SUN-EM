@@ -12,7 +12,8 @@ function  plotError(prop, err, gridSize, plotTitle)
     plot3(prop(:,1) , prop(:, 2) , err , '.', 'MarkerSize', 5);
     title(plotTitle);
     xlabel('Distance');
-    ylabel('Edge direction dot edge direction');  
+    ylabel('Edge direction dot edge direction');
+    %zlim([-0.01 0.01]);
     
     subplot(2,2,2);
     % x = dist, y = dir dot disp

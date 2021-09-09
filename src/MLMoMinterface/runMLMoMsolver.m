@@ -51,36 +51,109 @@ function [mlmom] = runMLMoMsolver(Const, Solver_setup, zMatrices)
     % dataset : ref, pred, unity
     % singularism : nonSing, sing ( 2 or 3 triangles), self, tri
     % ? : Context should be clear, first 2 parts could be missing as well
-    
-    
-    
-    
-    % ------------ EXTRACT  ------------ 
-    
+    %
+    % cluster variables always involves non singular triangles
+   
+     
     mlmom = [];
-    [selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp, singInd] = extractZmnInfo(Const, Solver_setup);
-    [refSelfZmn, refTriZmn, refNonSingZmn] = extractRefZmn(zMatrices.values, singInd );
-    edgeLengths = Solver_setup.rwg_basis_functions_length_m;
-    
+    addBias = 1;
+    singDataThresh = 1e-46;
     numFreq = zMatrices.numFreq;
     weightModels = cell(numFreq, 2); % real and imaginary models
     
+    % ------------ EXTRACT  ------------ 
+    
+    % Extract training data
+    
+    [selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp, singInd] = extractZmnInfo(Const, Solver_setup);
+    [refSelfZmn, refTriZmn, refNonSingZmn] = extractRefZmn(zMatrices.values, singInd );
+    [~ , numTerms] = size(nonSingZmnTerms); 
+    
+    %message_fc(Const, sprintf('  Finished Z-matrix training data calculation '));
+    
+    % Extract geometric properties
+    
+    edgeLengths = Solver_setup.rwg_basis_functions_length_m;   
+    maxDist = max(nonSingZmnProp(:,1));
+    avgEdgeLength = sum(edgeLengths)/numel(edgeLengths);
+    threshDist = 0.03584296*maxDist + 1.769794721407624*avgEdgeLength;
+    
+    % Configure clustering
+    
+    minExtraInitialClusterPoints = 0;
+    minInitialClusterPoints = numTerms + minExtraInitialClusterPoints + addBias;
+    minInitialClusterPointsForDynamicRegion = minInitialClusterPoints - 0;
+    clusterMinTol = 0.02;
+    clusterMaxIter = 6;
+    clusterPropScale = [3 1 1];
+    
+    % Cluster geometric properties
+    
+    message_fc(Const, sprintf('  Calculating cluster means '));
+    
+    [clusterMeans, numInitClusterPoints, numInitUnclusteredPoints] = initClusterMeans(nonSingZmnProp,threshDist, minInitialClusterPoints, minInitialClusterPointsForDynamicRegion);
+    [clusterMeans, clusterInd, clusterError, clusterNumIter, clusterActualTol] =...
+        calcClusterMeans(nonSingZmnProp,clusterMeans, clusterPropScale, clusterMaxIter, clusterMinTol);
+    [numClusters , ~] = size(clusterMeans);
+    
     % ------------ REAL AND IMAG MODEL FOR EACH FREQ  ------------ 
+    message_fc(Const, sprintf('  Calculating regression models '));
     
     for i = 1:numFreq
-        weightModels{i, 1} = calcWeightsStruct(refSelfZmn(:, i), refTriZmn(:, i), refNonSingZmn(:, i),...
-    selfZmnTerms(:,:, i), triZmnTerms(:,:, i), nonSingZmnTerms(:,:, i), nonSingZmnProp,edgeLengths, 1);
+        message_fc(Const, sprintf('    Processing frequency %d of %d  ',i,numFreq))
+        
+        weightModels{i, 1} = calcWeightsModel(refSelfZmn(:, i), refTriZmn(:, i), refNonSingZmn(:, i),...
+    selfZmnTerms(:,:, i), triZmnTerms(:,:, i), nonSingZmnTerms(:,:, i), nonSingZmnProp,clusterInd,singDataThresh, addBias, 1);
 
-        weightModels{i, 2} = calcWeightsStruct(refSelfZmn(:, i), refTriZmn(:, i), refNonSingZmn(:, i),...
-    selfZmnTerms(:,:, i), triZmnTerms(:,:, i), nonSingZmnTerms(:,:, i), nonSingZmnProp,edgeLengths, 0);
+        weightModels{i, 2} = calcWeightsModel(refSelfZmn(:, i), refTriZmn(:, i), refNonSingZmn(:, i),...
+    selfZmnTerms(:,:, i), triZmnTerms(:,:, i), nonSingZmnTerms(:,:, i), nonSingZmnProp,clusterInd,singDataThresh, addBias, 0);
 
     end
     
+
+    
     % ------------ UPDATE STRUCT  ------------ 
     
+    %cells
     mlmom.weightModels =weightModels;
     
+    %matrices
+    mlmom.clusterMeans = clusterMeans;
+    mlmom.clusterInd = clusterInd;
+    mlmom.clusterPropScale = clusterPropScale;
+    
+    
+    %scalars
+    mlmom.numInitClusterPoints = numInitClusterPoints;
+    mlmom.numInitUnclusteredPoints = numInitUnclusteredPoints;
+    mlmom.numFreq = numFreq;
+    mlmom.clusterError = clusterError;
+    mlmom.clusterNumIter = clusterNumIter;
+    mlmom.clusterActualTol = clusterActualTol;
+    mlmom.numClusters = numClusters;
+    mlmom.maxDist = maxDist;
+    mlmom.threshDist = threshDist;
+    
+    % ------------ CALCULATE Z MATRICES  ------------
+    
+    includeRealCalc = 0;
+    [zMatrices] = predictExtractedTerms( mlmom, selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp, singInd, includeRealCalc);
+    mlmom.zMatrices = zMatrices;
+    
+    message_fc(Const, sprintf('  Finished ML-MOM training '));
+    message_fc(Const,...
+        '------------------------------------------------------------------------------------');
+    
 end
+
+% Threshold regression
+%                 in = [0.1 0.005; 0.1 0.01; 0.1 0.015 ; 0.2 0.01 ; 0.2 0.02; 0.2 0.03;...
+%                     0.4 0.02; 0.4 0.04; 0.4 0.06; 0.8 0.04; 0.8 0.08; 0.8 0.12; 1.6 0.08; 1.6 0.16; 1.6 0.24];
+%                 out = [0.015; 0.025; 0.03; 0.04; 0.058; 0.068; 0.06; 0.1;0.131;0.12;0.19;0.23;0.2;0.38;0.5];
+%                 w = ( (in' *in) \ in')* out ;
+%                 w = [0.043777696318019  1.769794721407624 0.006263888888889];
+%                 OR w = [0.049472140762463 1.769794721407624]
+%                 Divide w(1) by sqrt(2)
     
 
     

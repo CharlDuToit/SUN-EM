@@ -31,7 +31,7 @@ function [terms, singIndices,...
     %   [2] Xinlei Chen, Changqing Gu, Zhenyi Niu, and Zhuo L, "Fast Dipole Method for Electromagnetic Scattering From Perfect 
     %       Electric Conducting Targets", IEEE TRANSACTIONS ON ANTENNAS AND PROPAGATION, VOL. 60, NO. 2, FEBRUARY 2012
 
-    message_fc(Const, sprintf('  Calculating Z-matrix '));
+    message_fc(Const, sprintf('  Calculating input Z-matrix and its geometric properties '));
     
     % Populate now the variables as used by [1] - esp. replace the use of
     % global variables.
