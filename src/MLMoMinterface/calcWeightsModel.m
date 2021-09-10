@@ -59,38 +59,45 @@ function [weightsModel] = calcWeightsModel(refSelfZmn, refTriZmn, refNonSingZmn,
     % self terms
    
     predSelfDiff = predSelfZmn - refSelfZmn;
-    predSelfNormSquareDiff = predSelfDiff.^2 ./ refSelfZmn.^2;
-    predSelfNormMSE = sum(predSelfNormSquareDiff) /numSelf;
+    %predSelfNormSquareDiff = predSelfDiff.^2 ./ refSelfZmn.^2;
+    %predSelfNormMSE = sum(predSelfNormSquareDiff) /numSelf;
+    predSelfRelNormPercentError = 100 * sqrt(sum(predSelfDiff.^2) / sum(refSelfZmn.^2));
     predSelfMSE = predSelfDiff'*predSelfDiff /numSelf;
     
     unitySelfDiff =  unitySelfZmn - refSelfZmn;
-    unitySelfNormSquareDiff = unitySelfDiff.^2 ./ refSelfZmn.^2;
-    unitySelfNormMSE = sum(unitySelfNormSquareDiff)./numSelf;
+    %unitySelfNormSquareDiff = unitySelfDiff.^2 ./ refSelfZmn.^2;
+    %unitySelfNormMSE = sum(unitySelfNormSquareDiff)./numSelf;
+    unitySelfRelNormPercentError = 100 * sqrt(sum(unitySelfDiff.^2) / sum(refSelfZmn.^2));
     unitySelfMSE = unitySelfDiff'*unitySelfDiff ./numSelf;
     
     % 3 unique triangles
    
     predTriDiff = predTriZmn - refTriZmn;
-    predTriNormSquareDiff = predTriDiff.^2 ./ refTriZmn.^2;
-    predTriNormMSE = sum(predTriNormSquareDiff) /numTri;
+    %predTriNormSquareDiff = predTriDiff.^2 ./ refTriZmn.^2;
+    %predTriNormMSE = sum(predTriNormSquareDiff) /numTri;
+    predTriRelNormPercentError = 100 * sqrt(sum(predTriDiff.^2) / sum(refTriZmn.^2));
     predTriMSE = predTriDiff'*predTriDiff /numTri;
     
     unityTriDiff =  unityTriZmn - refTriZmn;
-    unityTriNormSquareDiff = unityTriDiff.^2 ./ refTriZmn.^2;
-    unityTriNormMSE = sum(unityTriNormSquareDiff)./numTri;
+    %unityTriNormSquareDiff = unityTriDiff.^2 ./ refTriZmn.^2;
+    %unityTriNormMSE = sum(unityTriNormSquareDiff)./numTri;
+    unityTriRelNormPercentError = 100 * sqrt(sum(unityTriDiff.^2) / sum(refTriZmn.^2));
     unityTriMSE = unityTriDiff'*unityTriDiff ./numTri;
     
     % Non singular
     
     predNonSingDiff = predNonSingZmn -refNonSingZmn;
-    predNonSingNormSquareDiff = predNonSingDiff.^2 ./ refNonSingZmn.^2;
-    predNonSingNormMSE = sum(predNonSingNormSquareDiff) /numNonSing;
+    %predNonSingNormSquareDiff = predNonSingDiff.^2 ./ refNonSingZmn.^2;
+    %predNonSingNormMSE = sum(predNonSingNormSquareDiff) /numNonSing;
+    predNonSingRelNormPercentError = 100 * sqrt(sum(predNonSingDiff.^2) / sum(refNonSingZmn.^2));
     predNonSingMSE = predNonSingDiff'*predNonSingDiff /numNonSing;
     
     unityNonSingDiff =  unityNonSingZmn - refNonSingZmn;
-    unityNonSingNormSquareDiff = unityNonSingDiff.^2 ./ refNonSingZmn.^2;
-    unityNonSingNormMSE = sum(unityNonSingNormSquareDiff)./numNonSing;
+    %unityNonSingNormSquareDiff = unityNonSingDiff.^2 ./ refNonSingZmn.^2;
+    %unityNonSingNormMSE = sum(unityNonSingNormSquareDiff)./numNonSing;
+    unityNonSingRelNormPercentError = 100 * sqrt(sum(unityNonSingDiff.^2) / sum(refNonSingZmn.^2));
     unityNonSingMSE = unityNonSingDiff'*unityNonSingDiff ./numNonSing;
+    
     
     % ------------ PLOT DATA ------------
     % for instant debugging
@@ -101,15 +108,6 @@ function [weightsModel] = calcWeightsModel(refSelfZmn, refTriZmn, refNonSingZmn,
     
     if (~useReal)
     
-        %plotTitle = 'Unity weight error';
-        %unityWeightDiff = log(abs(mlmom.nonSingUnityWeightZmn ./ mlmom.refNonSingZmn));
-        %plotError(prop, unityNonSingDiff, gridSize, plotTitle);
-        %plotError(prop, log(unityNonSingNormSquareDiff), gridSize, plotTitle);
-        
-        %plotTitle = 'Predicted data error';
-        %predDiff = log(abs(mlmom.predNonSingZmn ./ mlmom.refNonSingZmn));
-        %plotError(prop, predNonSingDiff, gridSize, plotTitle);
-        %plotError(prop, log(predNonSingNormSquareDiff), gridSize, plotTitle);
         
         %[sortedRefNonSingZmn, ind] = sort(refNonSingZmn);
         %[sortedRefNonSingZmn, ind] = sort(log(abs(refNonSingZmn)));
@@ -132,10 +130,10 @@ function [weightsModel] = calcWeightsModel(refSelfZmn, refTriZmn, refNonSingZmn,
         
         hold off;
         hold on;
-        [sortedPredNonSingNormSquareDiff, ind1] = sort(predNonSingNormSquareDiff);
-        [sortedUnityNonSingNormSquareDiff, ind2] = sort(unityNonSingNormSquareDiff);
-        [sortedPredNonSingSquareDiff, ind3] = sort(predNonSingDiff.^2);
-        [sortedUnityNonSingSquareDiff, ind4] = sort(unityNonSingDiff.^2);
+%        [sortedPredNonSingNormSquareDiff, ind1] = sort(predNonSingNormSquareDiff);
+        %[sortedUnityNonSingNormSquareDiff, ind2] = sort(unityNonSingNormSquareDiff);
+        %[sortedPredNonSingSquareDiff, ind3] = sort(predNonSingDiff.^2);
+        %[sortedUnityNonSingSquareDiff, ind4] = sort(unityNonSingDiff.^2);
         
         %plot(log(sortedPredNonSingNormSquareDiff), 'r.','MarkerSize', 1)
         %plot(log(sortedUnityNonSingNormSquareDiff), 'b.','MarkerSize', 1)
@@ -190,10 +188,10 @@ function [weightsModel] = calcWeightsModel(refSelfZmn, refTriZmn, refNonSingZmn,
         
          % SELF TERM PLOTS 2D PLOTS
          
-         [sortedPredSelfNormSquareDiff, ind5] = sort(predSelfNormSquareDiff);
-         [sortedUnitySelfNormSquareDiff, ind6] = sort(unitySelfNormSquareDiff);
-         [sortedPredSelfSquareDiff, ind7] = sort(predSelfDiff.^2);
-         [sortedUnitySelfSquareDiff, ind8] = sort(unitySelfDiff.^2);
+        % [sortedPredSelfNormSquareDiff, ind5] = sort(predSelfNormSquareDiff);
+        % [sortedUnitySelfNormSquareDiff, ind6] = sort(unitySelfNormSquareDiff);
+         %[sortedPredSelfSquareDiff, ind7] = sort(predSelfDiff.^2);
+         %[sortedUnitySelfSquareDiff, ind8] = sort(unitySelfDiff.^2);
          hold on;
         % plot(sortedUnitySelfSquareDiff, 'r.','MarkerSize', 1)
          %a = predSelfDiff.^2;
@@ -202,10 +200,10 @@ function [weightsModel] = calcWeightsModel(refSelfZmn, refTriZmn, refNonSingZmn,
          
          % TRI TERM PLOTS 2D PLOTS
          
-         [sortedPredTriNormSquareDiff, ind9] = sort(predTriNormSquareDiff);
-         [sortedUnityTriNormSquareDiff, ind10] = sort(unityTriNormSquareDiff);
-         [sortedPredTriSquareDiff, ind11] = sort(predTriDiff.^2);
-         [sortedUnityTriSquareDiff, ind12] = sort(unityTriDiff.^2);
+         %[sortedPredTriNormSquareDiff, ind9] = sort(predTriNormSquareDiff);
+        % [sortedUnityTriNormSquareDiff, ind10] = sort(unityTriNormSquareDiff);
+         %[sortedPredTriSquareDiff, ind11] = sort(predTriDiff.^2);
+         %[sortedUnityTriSquareDiff, ind12] = sort(unityTriDiff.^2);
          hold on;
          %plot(sortedUnityTriSquareDiff, 'r.','MarkerSize', 1)
          %a = predTriDiff.^2;
@@ -250,26 +248,28 @@ function [weightsModel] = calcWeightsModel(refSelfZmn, refTriZmn, refNonSingZmn,
     %mlmom.totsetupTime = 0.0;
     %mlmom.totsolTime = 0.0;
     weightsModel.numNonSing = numNonSing;
-   % weightsStruct.numTerms = numTerms;
-   % weightsStruct.threshDist = threshDist;
-   % weightsStruct.numNoClass = numNoClass;
-   % weightsStruct.numClass = numClass;
     
     % Non singular
-    weightsModel.predNonSingNormMSE = predNonSingNormMSE;
-    weightsModel.unityNonSingNormMSE = unityNonSingNormMSE;  
+    %weightsModel.predNonSingNormMSE = predNonSingNormMSE;
+    %weightsModel.unityNonSingNormMSE = unityNonSingNormMSE; 
+    weightsModel.predNonSingRelNormPercentError = predNonSingRelNormPercentError;
+    weightsModel.unityNonSingRelNormPercentError = unityNonSingRelNormPercentError;
     weightsModel.predNonSingMSE = predNonSingMSE;  
     weightsModel.unityNonSingMSE = unityNonSingMSE;
 
     % Self
-    weightsModel.predSelfNormMSE = predSelfNormMSE;
-    weightsModel.unitySelfNormMSE = unitySelfNormMSE;
+    %weightsModel.predSelfNormMSE = predSelfNormMSE;
+    %weightsModel.unitySelfNormMSE = unitySelfNormMSE;
+    weightsModel.predSelfRelNormPercentError = predSelfRelNormPercentError;
+    weightsModel.unitySelfRelNormPercentError = unitySelfRelNormPercentError;
     weightsModel.predSelfMSE = predSelfMSE;    
     weightsModel.unitySelfMSE = unitySelfMSE;
     
     % 3 unique triangles
-    weightsModel.predTriNormMSE = predTriNormMSE;
-    weightsModel.unityTriNormMSE = unityTriNormMSE;
+    %weightsModel.predTriNormMSE = predTriNormMSE;
+    %weightsModel.unityTriNormMSE = unityTriNormMSE;
+    weightsModel.predTriRelNormPercentError = predTriRelNormPercentError;
+    weightsModel.unityTriRelNormPercentError = unityTriRelNormPercentError;
     weightsModel.predTriMSE= predTriMSE;     
     weightsModel.unityTriMSE = unityTriMSE;
     

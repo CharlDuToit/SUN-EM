@@ -118,6 +118,7 @@ function [mlmom] = runMLMoMsolver(Const, Solver_setup, zMatrices)
     mlmom.weightModels =weightModels;
     
     %matrices
+    mlmom.nonSingZmnProp = nonSingZmnProp;
     mlmom.clusterMeans = clusterMeans;
     mlmom.clusterInd = clusterInd;
     mlmom.clusterPropScale = clusterPropScale;
