@@ -1,4 +1,4 @@
-function [selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp, singInd ] = extractZmnInfo(Const, Solver_setup)
+function [selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp,nonSingEdgeLabels, singInd ] = extractZmnInfo(Const, Solver_setup)
 
     [terms,singInd, dist,edge_mm_dir_dot_edge_nn_dir, edge_mm_dir_dot_edge_nn_disp] = fillZmnTermsByEdge(Const,Solver_setup);
     [numEdges, ~, numTerms, numFreq] = size(terms);
@@ -9,6 +9,7 @@ function [selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp, singInd ] 
     
     % geometric properties not dependant on frequency
     nonSingZmnProp = zeros(numEdges^2 - numEdges, 3);
+    nonSingEdgeLabels = zeros(numEdges^2 - numEdges, 2);
     
     nonSingCount = 0;
     triCount = 0;
@@ -26,11 +27,15 @@ function [selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp, singInd ] 
                 nonSingZmnProp(nonSingCount, 3) = edge_mm_dir_dot_edge_nn_disp(mm,nn);
                 
                 nonSingZmnTerms(nonSingCount, :, :) = terms(mm,nn, :, : );
+                
+                nonSingEdgeLabels(nonSingCount, :) = [mm,nn];
             end
         end % for nn         
     end % for mm
     nonSingZmnTerms = nonSingZmnTerms(1:nonSingCount, :, :);
     nonSingZmnProp = nonSingZmnProp(1:nonSingCount, :, :);
+    nonSingEdgeLabels = nonSingEdgeLabels(1:nonSingCount, : );
     triZmnTerms = triZmnTerms(1:triCount, :, :);
+    
   
 end

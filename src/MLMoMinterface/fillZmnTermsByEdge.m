@@ -20,6 +20,7 @@ function [terms, singIndices,...
     %
     %   =======================
     %   Written by Danie Ludick on 2018.05.253
+    %   Modified by Charl du Toit on 2021.09.10
     %   Stellenbosch University
     %   Email: dludick.sun.ac.za 
     %   Credit to: Prof. David B. Davidson for the FillZMatrixByEdge routine that is based on his
@@ -40,10 +41,15 @@ function [terms, singIndices,...
     node_coord = Solver_setup.nodes_xyz;              % Replacing global NODE_COORD
     ell = Solver_setup.rwg_basis_functions_length_m;  % Replacing global ELL
     
-    quad_pts = Const.QUAD_PTS;
+    non_sing_quad_pts = Const.QUAD_PTS;
+    sing_quad_pts = Const.QUAD_PTS;
     sing     = Const.SING;
     eps_0    = Const.EPS_0;
     mu_0     = Const.MU_0;
+    
+    if (sing_quad_pts < 2)
+        sing_quad_pts = 3;
+    end
         
     % Extract edge direction
     edge_nodes = Solver_setup.rwg_basis_functions_shared_edge_nodes;
@@ -69,17 +75,14 @@ function [terms, singIndices,...
     %Z.values = complex(zeros(num_dofs,num_dofs,number_of_frequencies)); % Generalized impedance matrix.
     
     terms = complex(zeros(num_dofs,num_dofs, 8, number_of_frequencies));
-    
-    Phi_mn_mns_source_pls_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
-    Phi_mn_mns_source_mns_matrix= complex(zeros(num_dofs,num_dofs,number_of_frequencies));
-    Phi_mn_pls_source_pls_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
-    Phi_mn_pls_source_mns_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
-    
-    Amn_pls_source_pls_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
-    Amn_pls_source_mns_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
-    Amn_mns_source_pls_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
-    Amn_mns_source_mns_matrix = complex(zeros(num_dofs,num_dofs,number_of_frequencies));
-    
+    %terms(:,:,1) = A_m_pls_n_pls
+    %terms(:,:,2) = Phi_m_pls_n_pls
+    %terms(:,:,3) = A_m_pls_n_mns
+    %terms(:,:,4) = Phi_m_pls_n_mns
+    %terms(:,:,5) = A_m_mns_n_pls
+    %terms(:,:,6) = Phi_m_mns_n_pls
+    %terms(:,:,7) = A_m_mns_n_mns
+    %terms(:,:,8) = Phi_m_mns_n_mns
     dist = zeros(num_dofs,num_dofs);
     edge_mm_dir_dot_edge_nn_dir = zeros(num_dofs,num_dofs);
     edge_mm_dir_dot_edge_nn_disp = zeros(num_dofs,num_dofs);
@@ -153,6 +156,12 @@ function [terms, singIndices,...
                     triangle_tn_minus_free_vertex = Solver_setup.rwg_basis_functions_triangleMinusFreeVertex(nn);
                     
                     % First, find contribution from n+ and n- faces evaluated at m+
+                    
+                    % Change quad_pts based on type of triangle pair
+                    quad_pts = non_sing_quad_pts;
+                    if (singIndices(mm,nn))
+                        quad_pts = sing_quad_pts;
+                    end
                                     
                     % --------------------------------------------------------------                
                     % Look at Tm+
@@ -166,8 +175,13 @@ function [terms, singIndices,...
                     %Amn_pls_source_pls = MagVecPot;
                     %Phi_mn_pls_source_pls = -ScalPot;
                     % [DL - 2018] implementation: Swop the signs around
-                    Amn_pls_source_pls = -MagVecPot;
-                    Phi_mn_pls_source_pls = +ScalPot;
+                    %Amn_pls_source_pls = -MagVecPot;
+                    %Phi_mn_pls_source_pls = +ScalPot;
+                    
+                    %terms(:,:,1) = A_m_pls_n_pls
+                    %terms(:,:,2) = Phi_m_pls_n_pls
+                    terms(mm,nn,1,freq_index) = ell(mm) * 0.5i*omega*dot(-MagVecPot',rho_c_pls(mm,:));
+                    terms(mm,nn,2,freq_index) = - ell(mm) * ScalPot;
 
                     
                     % -- Contribution from Tn-
@@ -178,8 +192,13 @@ function [terms, singIndices,...
                     %Amn_pls_source_mns = - MagVecPot;
                     %Phi_mn_pls_source_mns = +ScalPot;
                     % [DL - 2018] implementation: Swop the signs around
-                    Amn_pls_source_mns = + MagVecPot;
-                    Phi_mn_pls_source_mns = -ScalPot;
+                    %Amn_pls_source_mns = + MagVecPot;
+                    %Phi_mn_pls_source_mns = -ScalPot;
+                    
+                    %terms(:,:,3) = A_m_pls_n_mns
+                    %terms(:,:,4) = Phi_m_pls_n_mns
+                    terms(mm,nn,3,freq_index) = ell(mm) * 0.5i*omega*dot(MagVecPot',rho_c_pls(mm,:));
+                    terms(mm,nn,4,freq_index) =  ell(mm) * ScalPot;
                                     
                     %Amn_pls = Amn_pls_source_pls + Amn_pls_source_mns;
                     %Phi_mn_pls = Phi_mn_pls_source_pls + Phi_mn_pls_source_mns;
@@ -194,8 +213,13 @@ function [terms, singIndices,...
                     %Amn_mns_source_pls = MagVecPot;
                     %Phi_mn_mns_source_pls = -ScalPot;
                     % [DL - 2018] implementation: Swop the signs around
-                    Amn_mns_source_pls = -MagVecPot;
-                    Phi_mn_mns_source_pls = +ScalPot;
+                    %Amn_mns_source_pls = -MagVecPot;
+                    %Phi_mn_mns_source_pls = +ScalPot;
+                    
+                    %terms(:,:,5) = A_m_mns_n_pls
+                    %terms(:,:,6) = Phi_m_mns_n_pls
+                    terms(mm,nn,5,freq_index) = ell(mm) * 0.5i*omega*dot(-MagVecPot',rho_c_mns(mm,:));
+                    terms(mm,nn,6,freq_index) =  ell(mm) * ScalPot;
                     
                     % -- Contribution from Tn-                
                     [MagVecPot,ScalPot] = Potentials(elements,node_coord,ell,pp_mns,qq_mns,mm,nn,triangle_tn_minus_free_vertex,...
@@ -204,8 +228,13 @@ function [terms, singIndices,...
                     %Amn_mns_source_mns = - MagVecPot;
                     %Phi_mn_mns_source_mns = +ScalPot;
                     % [DL - 2018] implementation: Swop the signs around
-                    Amn_mns_source_mns = +MagVecPot;
-                    Phi_mn_mns_source_mns = -ScalPot;
+                    %Amn_mns_source_mns = +MagVecPot;
+                    %Phi_mn_mns_source_mns = -ScalPot;
+                    
+                    %terms(:,:,7) = A_m_mns_n_mns
+                    %terms(:,:,8) = Phi_m_mns_n_mns
+                    terms(mm,nn,7,freq_index) = ell(mm) * 0.5i*omega*dot(MagVecPot',rho_c_mns(mm,:));
+                    terms(mm,nn,8,freq_index) =  - ell(mm) * ScalPot;
                     
                     %Amn_mns = Amn_mns_source_pls + Amn_mns_source_mns;
                     %Phi_mn_mns = Phi_mn_mns_source_pls + Phi_mn_mns_source_mns;
@@ -215,24 +244,18 @@ function [terms, singIndices,...
                     %Phi_mn_mns = Phi_mn_mns_source_pls + Phi_mn_mns_source_mns;
                     %Amn_pls = Amn_pls_source_pls + Amn_pls_source_mns;
                     %Amn_mns = Amn_mns_source_pls + Amn_mns_source_mns;
-                    Phi_mn_mns_source_pls_matrix(mm,nn,freq_index) = ell(mm) * Phi_mn_mns_source_pls;
-                    Phi_mn_mns_source_mns_matrix(mm,nn,freq_index) = ell(mm) * Phi_mn_mns_source_mns;
-                    Phi_mn_pls_source_pls_matrix(mm,nn,freq_index) = - ell(mm) * Phi_mn_pls_source_pls;
-                    Phi_mn_pls_source_mns_matrix(mm,nn,freq_index) = - ell(mm) * Phi_mn_pls_source_mns;
                     
-                    Amn_pls_source_pls_matrix(mm,nn,freq_index) = ell(mm) * 0.5i*omega*dot(Amn_pls_source_pls',rho_c_pls(mm,:));
-                    Amn_pls_source_mns_matrix(mm,nn,freq_index) = ell(mm) * 0.5i*omega*dot(Amn_pls_source_mns',rho_c_pls(mm,:));
-                    Amn_mns_source_pls_matrix(mm,nn,freq_index) = ell(mm) * 0.5i*omega*dot(Amn_mns_source_pls',rho_c_mns(mm,:));
-                    Amn_mns_source_mns_matrix(mm,nn,freq_index) = ell(mm) * 0.5i*omega*dot(Amn_mns_source_mns',rho_c_mns(mm,:)); 
-                    
-                    edge_c_mm  = edge_c(mm, :);
-                    edge_c_nn  = edge_c(nn, :);
-                    disp = edge_c_nn - edge_c_mm;
-                    dist(mm,nn) =  norm(disp);
-                    edge_mm_dir_dot_edge_nn_dir(mm,nn) = dot(edge_dir(mm,:),edge_dir(nn,:) );
-                    %avoid divide by zero
-                    if (mm ~= nn)
-                        edge_mm_dir_dot_edge_nn_disp(mm,nn) = dot( edge_dir(mm,:), disp/dist(mm,nn));
+                    % Geometry properties only have to calculated once
+                    if (~singIndicesCalculated)
+                        edge_c_mm  = edge_c(mm, :);
+                        edge_c_nn  = edge_c(nn, :);
+                        disp = edge_c_nn - edge_c_mm;
+                        dist(mm,nn) =  norm(disp);
+                        edge_mm_dir_dot_edge_nn_dir(mm,nn) = dot(edge_dir(mm,:),edge_dir(nn,:) );
+                        %avoid divide by zero
+                        if (mm ~= nn)
+                            edge_mm_dir_dot_edge_nn_disp(mm,nn) = dot( edge_dir(mm,:), disp/dist(mm,nn));
+                        end
                     end
                     
                     %Z.values(mm,nn) = 1i*omega*...
@@ -246,18 +269,25 @@ function [terms, singIndices,...
             end % for nn = 1:NUM_DOFS
         end %for mm = 1:NUM_DOFS
         % Singular indices is not dependant on frequency
-        % Remove empty rows
         singIndicesCalculated = true;
-        %singIndices = singIndices(1:singIndicesCount, :);
-        terms(:,:,1,freq_index) = Phi_mn_mns_source_pls_matrix(:,:,freq_index);
-        terms(:,:,2,freq_index) = Phi_mn_mns_source_mns_matrix(:,:,freq_index);
-        terms(:,:,3,freq_index) = Phi_mn_pls_source_pls_matrix(:,:,freq_index);
-        terms(:,:,4,freq_index) = Phi_mn_pls_source_mns_matrix(:,:,freq_index);
-        
-        terms(:,:,5,freq_index) = Amn_pls_source_pls_matrix(:,:,freq_index);
-        terms(:,:,6,freq_index) = Amn_pls_source_mns_matrix(:,:,freq_index);
-        terms(:,:,7,freq_index) = Amn_mns_source_pls_matrix(:,:,freq_index);
-        terms(:,:,8,freq_index) = Amn_mns_source_mns_matrix(:,:,freq_index);
+%         terms(:,:,1,freq_index) = Phi_mn_mns_source_pls_matrix(:,:,freq_index);
+%         terms(:,:,2,freq_index) = Phi_mn_mns_source_mns_matrix(:,:,freq_index);
+%         terms(:,:,3,freq_index) = Phi_mn_pls_source_pls_matrix(:,:,freq_index);
+%         terms(:,:,4,freq_index) = Phi_mn_pls_source_mns_matrix(:,:,freq_index);
+
+%         terms(:,:,1,freq_index) = Amn_pls_source_pls_matrix(:,:,freq_index);
+%         terms(:,:,2,freq_index) = Phi_mn_pls_source_pls_matrix(:,:,freq_index);
+% 
+%         terms(:,:,3,freq_index) = Amn_pls_source_mns_matrix(:,:,freq_index);
+%         terms(:,:,4,freq_index) = Phi_mn_pls_source_mns_matrix(:,:,freq_index);
+% 
+%         terms(:,:,5,freq_index) = Amn_mns_source_pls_matrix(:,:,freq_index);
+%         terms(:,:,6,freq_index) = Phi_mn_mns_source_pls_matrix(:,:,freq_index);
+% 
+%         terms(:,:,7,freq_index) = Amn_mns_source_mns_matrix(:,:,freq_index);
+%         terms(:,:,8,freq_index) = Phi_mn_mns_source_mns_matrix(:,:,freq_index);
+
+
     end %for freq_index = 1:Solver_setup.frequencies.freq_num        
    
 end %function FillZMatrixByEdge

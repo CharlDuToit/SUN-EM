@@ -1,4 +1,4 @@
-function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,threshDist, minClusterSize, minPointsDynamicRegion)
+function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterSizes, threshDist, minClusterSize, minPointsDynamicRegion)
   % Assume planar, similar edge lengths
   % prop 1: distance
   % prop 2: edge direction dot edge direction
@@ -7,15 +7,16 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,threshDist
    [~, numProp] = size(prop);
   
    %Initialise cluster size of each property
-    numDirDotDirClusters = 12; %12
-    numDirDotDispClusters = 12;  %12
-    numPreThreshDistClusters = 6;
-    numPostThreshDistClusters = 10;
+    numDirDotDirClusters = clusterSizes(1); 
+    numDirDotDispClusters = clusterSizes(2);  
+    numPreThreshDistClusters = clusterSizes(3);
+    numPostThreshDistClusters = clusterSizes(4);
     
     maxDist = max(prop(:,1));
     minDist = min(prop(:,1));
     
     % intervals for properties
+    %distInterval = hypspace(minDist, threshDist, numPreThreshDistClusters);
     distInterval = linspace(minDist, threshDist,numPreThreshDistClusters );
     numDistClusters = numPostThreshDistClusters + numPreThreshDistClusters -1;
     distInterval(numPreThreshDistClusters:numDistClusters) = linspace(threshDist, maxDist, numPostThreshDistClusters);
@@ -39,7 +40,7 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,threshDist
   
     %Absolote value of dot products (might want negative values for non
     %planar structures)
-    %prop(:,2) = abs(prop(:,2));
+   % prop(:,2) = abs(prop(:,2));
     
     for i = 1:(numDistClusters-1)
         low_dist = distInterval(i) + distOffset;
@@ -112,4 +113,18 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,threshDist
     end % for i
     clusterMeans = clusterMeans(1:totalClusters , :);
     
+end
+
+function [interval] = hypspace(low, high, numPoints)
+    interval = zeros(1,numPoints);
+    if (numPoints == 2)
+        interval(1) = low;
+        interval(2) = high;
+    end
+    delta = (1/low - 1/high)/(numPoints-1);
+    for k = 1:numPoints
+        interval(k) = 1/(1/low - (k -1)*delta );
+    end
+
+
 end
