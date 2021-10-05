@@ -30,11 +30,11 @@
 % [Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const);
 % [Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
 % 
-%  tic;
-%  Const.QUAD_PTS = 1;
-%  [zMatrices1point]=FillZMatrixByEdge(Const,Solver_setup) ;
-%  t = toc;
  %tic;
+% Const.QUAD_PTS = 1;
+% [zMatrices1point]=FillZMatrixByEdge(Const,Solver_setup) ;
+% t = toc;
+% %tic;
 % %Const.QUAD_PTS = 6;
 % %[zMatrices3point]=FillZMatrixByEdge(Const,Solver_setup) ;
 % %b = toc;

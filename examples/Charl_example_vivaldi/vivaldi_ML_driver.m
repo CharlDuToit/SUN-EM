@@ -26,13 +26,15 @@ Const.FEKOoutfilename          = 'vivaldi_array.out';
 [Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
 Const.QUAD_PTS = 1;
 Const.MLMoMClusterSizeScale = 1;
+Const.MLMoMMinPercentImprov = 0;
+Const.MLMoMIncludeRealCalc = 0;
 [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 mlmom = Solution.mlmom;
 
 % first extract .mat files for ref Z and solver setup
 
 %refZmn_plate = zMatrices_plate.values;
-%[predZmn_plate, unityZmn_plate, singInd_plate] = predictSolverSetup(Const,Solver_setup_plate, mlmom, 1,1);
-%[comp_real] = compareZmn(refZmn_plate, predZmn_plate,unityZmn_plate,singInd_plate, 1, 1) ;
-%[comp_imag] = compareZmn(refZmn_plate, predZmn_plate, unityZmn_plate, singInd_plate, 1, 0);
+%[predZmn_plate, unityZmn_plate, singInd_plate] = predictSolverSetup(Const,Solver_setup_plate, mlmom,1);
+%[comp_real] = compareZmn(refZmn_plate, predZmn_plate,unityZmn_plate,singInd_plate, 1) ;
+%[comp_imag] = compareZmn(refZmn_plate, predZmn_plate, unityZmn_plate, singInd_plate, 0);
 

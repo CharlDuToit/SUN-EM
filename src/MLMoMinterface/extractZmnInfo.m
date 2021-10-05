@@ -1,7 +1,8 @@
-function [selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp,nonSingEdgeLabels, singInd ] = extractZmnInfo(Const, Solver_setup)
-
-    [terms,singInd, dist,edge_mm_dir_dot_edge_nn_dir, edge_mm_dir_dot_edge_nn_disp] = fillZmnTermsByEdge(Const,Solver_setup);
-    [numEdges, ~, numTerms, numFreq] = size(terms);
+function [allTerms, allProperties, selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp,nonSingEdgeLabels, singInd ] = extractZmnInfo(Const, Solver_setup)
+    
+    %[allTerms,singInd, dist,edge_mm_dir_dot_edge_nn_dir, edge_mm_dir_dot_edge_nn_disp] = fillZmnTermsByEdge(Const,Solver_setup);
+    [allTerms,singInd, allProperties] = fillZmnTermsByEdge(Const,Solver_setup);
+    [numEdges, ~, numTerms, numFreq] = size(allTerms);
     
     nonSingZmnTerms = zeros(numEdges^2 - numEdges, numTerms, numFreq);
     selfZmnTerms = zeros(numEdges , numTerms , numFreq);
@@ -16,17 +17,21 @@ function [selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp,nonSingEdge
     for mm = 1:numEdges
         for nn = 1:numEdges
             if (mm == nn)
-                selfZmnTerms(mm, :, :) = terms(mm,mm, :, : );
+                selfZmnTerms(mm, :, :) = allTerms(mm,mm, :, : );
             elseif (singInd(mm,nn))
                 triCount = triCount + 1;
-                triZmnTerms(triCount, :, :) = terms(mm,nn, :, : );
+                triZmnTerms(triCount, :, :) = allTerms(mm,nn, :, : );
             else
                 nonSingCount = nonSingCount + 1;
-                nonSingZmnProp(nonSingCount, 1) = dist(mm,nn);
-                nonSingZmnProp(nonSingCount, 2) = edge_mm_dir_dot_edge_nn_dir(mm,nn);
-                nonSingZmnProp(nonSingCount, 3) = edge_mm_dir_dot_edge_nn_disp(mm,nn);
+%                 nonSingZmnProp(nonSingCount, 1) = dist(mm,nn);
+%                 nonSingZmnProp(nonSingCount, 2) = edge_mm_dir_dot_edge_nn_dir(mm,nn);
+%                 nonSingZmnProp(nonSingCount, 3) = edge_mm_dir_dot_edge_nn_disp(mm,nn);
                 
-                nonSingZmnTerms(nonSingCount, :, :) = terms(mm,nn, :, : );
+                nonSingZmnProp(nonSingCount, 1) = allProperties(mm,nn,1);
+                nonSingZmnProp(nonSingCount, 2) = allProperties(mm,nn,2);
+                nonSingZmnProp(nonSingCount, 3) = allProperties(mm,nn,3);
+                
+                nonSingZmnTerms(nonSingCount, :, :) = allTerms(mm,nn, :, : );
                 
                 nonSingEdgeLabels(nonSingCount, :) = [mm,nn];
             end

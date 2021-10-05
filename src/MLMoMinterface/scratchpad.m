@@ -59,6 +59,7 @@ triangleMinusFreeVertex(3) = 6;
 %---------------------
 
 Solver_setup = [];
+Solver_setup.frequencies = [];
 Solver_setup.num_metallic_edges = 3;
 Solver_setup.num_metallic_triangles = 4;
 
@@ -77,51 +78,4 @@ Solver_setup.rwg_basis_functions_triangleMinusFreeVertex = triangleMinusFreeVert
 %[new_solver_setup] = addTriangles(new_solver_setup);
 %plot(new_solver_setup.nodes_xyz(:,1), new_solver_setup.nodes_xyz(:,2), '.', 'markerSize', 20);
 
-%[triangleEdges, extEdgeNodes, extEdgeCentres, extEdgeLengths, extEdgeOppositeNodes] = verticesToEdges(triangleVertices, intEdgeNodes, nodesXYZ);
-% function [triangleEdges, extEdgeNodes, extEdgeCentres, extEdgeLengths, extEdgeOppositeNodes] = verticesToEdges(triangleVertices, intEdgeNodes, nodesXYZ)
-%     %input
-%     % triangleVertices: labels [numTri, 3]
-%     % intEdgeNodes: labels [numIntEdge, 2]
-%     % nodesXYZ : xyz [numNodes, 3]
-% 
-%     % output
-%     % triangleEdges: labels [numTri, 3]
-%     % extEdgeNodes: labels [numExtEdge, 2]
-%     % extEdgeCentres: xyz [numExtEdge, 3]
-%     % extEdgeLengths: m [numExtEdge, 1]
-%     % extEdgeOppositeNodes : labels [numExtEdge, 1]
-%     
-%     numTri = numel(triangleVertices(:,1));
-%     numIntEdge = numel(intEdgeNodes(:,1));
-%     triangleEdges = zeros(numTri, 3);
-%     extEdgeNodes = zeros(numIntEdge *4, 2);
-%     extEdgeCentres = zeros(numIntEdge *4, 3);
-%     extEdgeLengths = zeros(numIntEdge *4, 1);
-%     extEdgeOppositeNodes = zeros(numIntEdge *4, 1);
-%     
-%     extEdgeCount = 0;
-%     for triCount = 1:numTri
-%         for node = 1:3
-%             a = node;
-%             b = mod(node,3) +1;
-%             
-%             edgeLabel = find( ( intEdgeNodes(:,1) == triangleVertices(triCount,a) & intEdgeNodes(:,2) == triangleVertices(triCount,b) ) |...
-%                 (intEdgeNodes(:,1) == triangleVertices(triCount,b) & intEdgeNodes(:,2) == triangleVertices(triCount,a)) );
-%             if (numel(edgeLabel) > 0) % internal edge
-%                 triangleEdges(triCount, node) = edgeLabel(1);
-%             else % external edge
-%                 c = mod(node+1,3) + 1;
-%                 extEdgeCount = extEdgeCount + 1;
-%                 triangleEdges(triCount, node) = numIntEdge + extEdgeCount;
-%                 extEdgeNodes(extEdgeCount, :) = [triangleVertices(triCount,a)  triangleVertices(triCount,b)];
-%                 extEdgeCentres(extEdgeCount, :) = 0.5*nodesXYZ(extEdgeNodes(extEdgeCount, 1) , :) + 0.5*nodesXYZ(extEdgeNodes(extEdgeCount, 2) , :);
-%                 extEdgeLengths(extEdgeCount, 1) = norm(nodesXYZ(extEdgeNodes(extEdgeCount, 1) , :) - nodesXYZ(extEdgeNodes(extEdgeCount, 2) , :));
-%                 extEdgeOppositeNodes(extEdgeCount, 1) = triangleVertices(triCount,c);
-%             end
-%         end % for node
-%     end % for triCount
-%     extEdgeNodes = extEdgeNodes(1:extEdgeCount, :);
-%     extEdgeCentres = extEdgeCentres(1:extEdgeCount, :);
-%     extEdgeLengths = extEdgeLengths(1:extEdgeCount, 1);
-%     extEdgeOppositeNodes = extEdgeOppositeNodes(1:extEdgeCount, 1);
-% end
+

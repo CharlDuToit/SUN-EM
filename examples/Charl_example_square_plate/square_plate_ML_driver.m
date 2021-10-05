@@ -13,6 +13,8 @@ Const.runMLMoMsolver              = true;
 
 Const.MLMoMClusterSizeScale = 1;
 Const.QUAD_PTS = 1;
+Const.MLMoMMinPercentImprov = 0;
+Const.MLMoMIncludeRealCalc = 0;
 [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 
 mlmom = Solution.mlmom;

@@ -1,5 +1,7 @@
 %function  [clusterWeights, pred] = calcClusterWeights(terms, refVals, clusterInd, singThresh, addBias)
 function  [clusterWeights, pred,clusterWeightsInd] = calcClusterWeights(terms, refVals,nonSingZmnProp, clusterInd,edgeLabels, edgeLengths,clusterMaxEdgeLength, singThresh, addBias, minPercentImprov, useProjectedEdges)
+    %edgeLabels only used if useProjectedEdges =1
+
     [numObs, numTerms] = size(terms);
     %[numObs, 1] = size(ClusterInd);
     %[numObs, 1] = size(refVals)

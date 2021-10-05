@@ -1,5 +1,6 @@
-function [terms, singIndices,...
-    dist,edge_mm_dir_dot_edge_nn_dir, edge_mm_dir_dot_edge_nn_disp ] = fillZmnTermsByEdge(Const,Solver_setup)    
+% function [terms, singIndices,...
+%     dist,edge_mm_dir_dot_edge_nn_dir, edge_mm_dir_dot_edge_nn_disp ] = fillZmnTermsByEdge(Const,Solver_setup)
+function [terms, singIndices, properties] = fillZmnTermsByEdge(Const,Solver_setup)   
     %fillZmnTermsByEdge
     %   Date: 2021.08.07
     %   Usage:
@@ -83,9 +84,11 @@ function [terms, singIndices,...
     %terms(:,:,6) = Phi_m_mns_n_pls
     %terms(:,:,7) = A_m_mns_n_mns
     %terms(:,:,8) = Phi_m_mns_n_mns
+    
     dist = zeros(num_dofs,num_dofs);
-    edge_mm_dir_dot_edge_nn_dir = zeros(num_dofs,num_dofs);
-    edge_mm_dir_dot_edge_nn_disp = zeros(num_dofs,num_dofs);
+    orientation = zeros(num_dofs,num_dofs);
+    radial = zeros(num_dofs,num_dofs);
+    properties = zeros(num_dofs, num_dofs, 3); %dist, dir dot dir, dir dot disp
     
     singIndices = zeros(num_dofs ,num_dofs);
     singIndicesCalculated = false;
@@ -247,17 +250,46 @@ function [terms, singIndices,...
                     
                     % Geometry properties only have to calculated once
                     if (~singIndicesCalculated)
-                        edge_c_mm  = edge_c(mm, :);
-                        edge_c_nn  = edge_c(nn, :);
-                        disp = edge_c_nn - edge_c_mm;
+                        %edge_c_mm  = edge_c(mm, :);
+                        %edge_c_nn  = edge_c(nn, :);
+                       
+                        disp = edge_c(nn, :) - edge_c(mm, :);
+                        %properties(mm,nn,:) = calcProp(edge_dir(mm,:),edge_dir(nn,:),disp);
+%                        [dist(mm,nn), orientation(mm,nn), radial(mm,nn) ] = calcProp(edge_dir(mm,:),edge_dir(nn,:),disp);
                         dist(mm,nn) =  norm(disp);
-                        edge_mm_dir_dot_edge_nn_dir(mm,nn) = dot(edge_dir(mm,:),edge_dir(nn,:) );
+                        orientation(mm,nn) = calcAngle(edge_dir(mm,:),edge_dir(nn,:) );
+                        %1st  symmetry 
+                        if (orientation(mm,nn) < 0)
+                            orientation(mm,nn) = orientation(mm,nn) + pi;
+                        end
                         %avoid divide by zero
                         if (mm ~= nn)
-                            edge_mm_dir_dot_edge_nn_disp(mm,nn) = dot( edge_dir(mm,:), disp/dist(mm,nn));
+                            %radial(mm,nn) = dot( edge_dir(mm,:), disp/dist(mm,nn));
+                            radial(mm,nn) = calcAngle(edge_dir(mm,:),disp );
+                            % 1st symmetry
+                            if (radial(mm,nn) < 0)
+                                radial(mm,nn) = radial(mm,nn) + pi;
+                            end
+                            % 2nd symmetry
+                            if (radial(mm,nn) > pi/2)
+                                orientation(mm,nn) = pi - orientation(mm,nn);
+                                radial(mm,nn) = pi - radial(mm,nn);
+                            end
+                            %radial(mm,nn) = dot( edge_dir(mm,:), disp/dist(mm,nn));
                         end
+                        %orientation(mm,nn) =dot(edge_dir(mm,:),edge_dir(nn,:) );
                     end
                     
+%                     if (mm ~= nn)
+%                         [indices] = arrangeTermIndices(Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_trianglePlus(mm),:), ...
+%                             Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_triangleMinus(mm),:), ...
+%                             Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_trianglePlus(nn),:), ...
+%                             Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_triangleMinus(nn),:));
+%                         %[indices] = arrangeTermIndices(mmPlusCentre, mmMinusCentre, nnPlusCentre, nnMinusCentre)
+%                         %swap around
+%                         terms(mm,nn,:,freq_index) = terms(mm,nn,indices,freq_index);
+%                     end
+
                     %Z.values(mm,nn) = 1i*omega*...
                         %(dot(Amn_pls',rho_c_pls(mm,:))/2 + dot(Amn_mns',rho_c_mns(mm,:))/2) + Phi_mn_mns - Phi_mn_pls;
                     
@@ -270,25 +302,11 @@ function [terms, singIndices,...
         end %for mm = 1:NUM_DOFS
         % Singular indices is not dependant on frequency
         singIndicesCalculated = true;
-%         terms(:,:,1,freq_index) = Phi_mn_mns_source_pls_matrix(:,:,freq_index);
-%         terms(:,:,2,freq_index) = Phi_mn_mns_source_mns_matrix(:,:,freq_index);
-%         terms(:,:,3,freq_index) = Phi_mn_pls_source_pls_matrix(:,:,freq_index);
-%         terms(:,:,4,freq_index) = Phi_mn_pls_source_mns_matrix(:,:,freq_index);
 
-%         terms(:,:,1,freq_index) = Amn_pls_source_pls_matrix(:,:,freq_index);
-%         terms(:,:,2,freq_index) = Phi_mn_pls_source_pls_matrix(:,:,freq_index);
-% 
-%         terms(:,:,3,freq_index) = Amn_pls_source_mns_matrix(:,:,freq_index);
-%         terms(:,:,4,freq_index) = Phi_mn_pls_source_mns_matrix(:,:,freq_index);
-% 
-%         terms(:,:,5,freq_index) = Amn_mns_source_pls_matrix(:,:,freq_index);
-%         terms(:,:,6,freq_index) = Phi_mn_mns_source_pls_matrix(:,:,freq_index);
-% 
-%         terms(:,:,7,freq_index) = Amn_mns_source_mns_matrix(:,:,freq_index);
-%         terms(:,:,8,freq_index) = Phi_mn_mns_source_mns_matrix(:,:,freq_index);
-
-
-    end %for freq_index = 1:Solver_setup.frequencies.freq_num        
+    end %for freq_index = 1:Solver_setup.frequencies.freq_num 
+    properties(:,:,1) = dist;
+    properties(:,:,2) = orientation;
+    properties(:,:,3) = radial;
    
 end %function FillZMatrixByEdge
 

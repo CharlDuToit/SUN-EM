@@ -20,8 +20,13 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterSiz
     distInterval = linspace(minDist, threshDist,numPreThreshDistClusters );
     numDistClusters = numPostThreshDistClusters + numPreThreshDistClusters -1;
     distInterval(numPreThreshDistClusters:numDistClusters) = linspace(threshDist, maxDist, numPostThreshDistClusters);
-    dirDotDirInterval = linspace( -1 , 1 , numDirDotDirClusters);
-    dirDotDispInterval = linspace( -1 , 1 , numDirDotDispClusters);  
+    %dirDotDirInterval = linspace( -1 , 1 , numDirDotDirClusters);
+    %dirDotDispInterval = linspace( -1 , 1 , numDirDotDispClusters);  
+    
+    orientationInterval = linspace( 0 , pi , numDirDotDirClusters);
+    radialInterval = linspace( 0 , pi/2 , numDirDotDispClusters);
+%     orientationInterval = linspace( -1 , 1 , numDirDotDirClusters);
+%     radialInterval = linspace( -1 , 1 , numDirDotDispClusters);  
 
     %initialise
     
@@ -49,14 +54,14 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterSiz
             if (j == 1)
                 dirDotDirOffset = 0;
             end
-            low_dir_dot_dir = dirDotDirInterval(j)+ dirDotDirOffset;
-            high_dir_dot_dir = dirDotDirInterval(j+1) + dirDotDirOffset;
+            low_dir_dot_dir = orientationInterval(j)+ dirDotDirOffset;
+            high_dir_dot_dir = orientationInterval(j+1) + dirDotDirOffset;
             for k = 1:(numDirDotDispClusters-1)
                 if (k == 1)
                     dirDotDispOffset = 0;
                 end
-                low_dir_dot_disp = dirDotDispInterval(k) + dirDotDispOffset;
-                high_dir_dot_disp = dirDotDispInterval(k+1) + dirDotDispOffset;
+                low_dir_dot_disp = radialInterval(k) + dirDotDispOffset;
+                high_dir_dot_disp = radialInterval(k+1) + dirDotDispOffset;
                      
                 if (low_dist > maxDist || low_dir_dot_dir > 1 || low_dir_dot_disp > 1) 
                     break 
@@ -78,7 +83,7 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterSiz
                     if (N >= minPointsDynamicRegion) % dont increase a region if there are few points in it
                         %distStep = (maxIncrease / numSteps) * (distInterval(i+1) - distInterval(i));
                         %dirDotDirStep = (maxIncrease / numSteps) * (dirDotDirInterval(j+1) - dirDotDirInterval(j));
-                        dirDotDispStep = (maxIncrease / numSteps) * (dirDotDispInterval(k+1) - dirDotDispInterval(k));
+                        dirDotDispStep = (maxIncrease / numSteps) * (radialInterval(k+1) - radialInterval(k));
                         
                         step = 0;
                         while (N < minClusterSize && step < numSteps)

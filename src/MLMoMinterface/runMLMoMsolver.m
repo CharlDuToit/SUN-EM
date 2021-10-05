@@ -54,29 +54,34 @@ function [mlmom] = runMLMoMsolver(Const, Solver_setup, zMatrices)
     %
     % cluster variables always involves non singular triangles
    
-     
+
+    clusterSizeScale = Const.MLMoMClusterSizeScale;
+    minPercentImprov = Const.MLMoMMinPercentImprov;
+    includeRealCalc = Const.MLMoMIncludeRealCalc;
+    numFreq = zMatrices.numFreq;
+    edgeLengths = Solver_setup.rwg_basis_functions_length_m;
+    numEdges = Solver_setup.num_mom_basis_functions;
+    
     mlmom = [];
     addBias = 0;
     singDataThresh = 1e-44;
     useProjectedEdges = 0;
-    minPercentImprov = 0;
-    numFreq = zMatrices.numFreq;
-    weightModels = cell(numFreq, 2); % real and imaginary models
     
+    weightModels = cell(numFreq, 2); % real and imaginary models
+
     % ------------ EXTRACT  ------------ 
     
     % Extract training data
     
     tic;
-    [selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp,nonSingEdgeLabels, singInd] = extractZmnInfo(Const, Solver_setup);
+    [allTerms, allProperties, selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp,nonSingEdgeLabels, singInd] = extractZmnInfo(Const, Solver_setup);
     unityZmnCalcTime = toc;
     [refSelfZmn, refTriZmn, refNonSingZmn] = extractRefZmn(zMatrices.values, singInd );
     [~ , numTerms] = size(nonSingZmnTerms);
     
     % Extract geometric properties
     
-    edgeLengths = Solver_setup.rwg_basis_functions_length_m;
-    numEdges = Solver_setup.num_mom_basis_functions;
+
     maxDist = max(nonSingZmnProp(:,1));
     avgEdgeLength = sum(edgeLengths)/numel(edgeLengths);
     threshDist = 0.03584296*maxDist + 1.769794721407624*avgEdgeLength;
@@ -92,6 +97,8 @@ function [mlmom] = runMLMoMsolver(Const, Solver_setup, zMatrices)
     %DirDotDir= clusterPropScale(2)
     %DirDotDisp= clusterPropScale(3)
     %clusterPropScale = [4.6 1.55 0.7]; %[4.6 1.55 0.7];
+    
+    %propScale = [3.8 1.5 1];
     propScale = [3.8 1.5 1];
     
     % 260 edges
@@ -102,10 +109,10 @@ function [mlmom] = runMLMoMsolver(Const, Solver_setup, zMatrices)
     %numDirDotDispClusters = clusterSizes(2); 12
     %numPreThreshDistClusters = clusterSizes(3);6 
     %numPostThreshDistClusters = clusterSizes(4);10
-    clusterSizeScale = Const.MLMoMClusterSizeScale;
-    clusterSizes = round(clusterSizeScale* [16 2 10 15] * (numEdges/260).^(1/3)); %best [16 16 10 15] 
+    
+    clusterSizes = round(clusterSizeScale* [16 16 10 15] * (numEdges/260).^(1/3)); %best [16 16 10 15] 
     clusterSizes(2) = 2;
-    %clusterSizes = [20,15,9,14];
+    %clusterSizes = [2 2 2 2];
     for k = 1:numel(clusterSizes)
         if (clusterSizes(k) < 2)
             clusterSizes(k) = 2;
@@ -134,9 +141,11 @@ function [mlmom] = runMLMoMsolver(Const, Solver_setup, zMatrices)
         lengths(: , 2) = edgeLengths(labels(:, 2));
         
         [~, maxLengthSumInd] = max(lengths(: , 1) + lengths(: , 2));
-        maxLengthM = lengths(maxLengthSumInd , 1);
-        maxLengthN = lengths(maxLengthSumInd , 2);
-        clusterMaxEdgeLength(k, :) = [maxLengthM maxLengthN];
+        if (numel(maxLengthSumInd) == 2)
+            maxLengthM = lengths(maxLengthSumInd , 1);
+            maxLengthN = lengths(maxLengthSumInd , 2);
+            clusterMaxEdgeLength(k, :) = [maxLengthM maxLengthN];
+        end
     end
 
     
@@ -145,11 +154,11 @@ function [mlmom] = runMLMoMsolver(Const, Solver_setup, zMatrices)
     tic;
     
     for i = 1:numFreq
-       % message_fc(Const, sprintf('    Processing frequency %d of %d  ',i,numFreq))
-        
-        weightModels{i, 1} = calcWeightModel(refSelfZmn(:, i), refTriZmn(:, i), refNonSingZmn(:, i),...
-    selfZmnTerms(:,:, i), triZmnTerms(:,:, i), nonSingZmnTerms(:,:, i), nonSingZmnProp,clusterInd,nonSingEdgeLabels,edgeLengths, clusterMaxEdgeLength,singDataThresh, addBias,useProjectedEdges,minPercentImprov, 1);
-
+        % message_fc(Const, sprintf('    Processing frequency %d of %d  ',i,numFreq))
+        if (includeRealCalc)
+            weightModels{i, 1} = calcWeightModel(refSelfZmn(:, i), refTriZmn(:, i), refNonSingZmn(:, i),...
+                selfZmnTerms(:,:, i), triZmnTerms(:,:, i), nonSingZmnTerms(:,:, i), nonSingZmnProp,clusterInd,nonSingEdgeLabels,edgeLengths, clusterMaxEdgeLength,singDataThresh, addBias,useProjectedEdges,minPercentImprov, 1);
+        end
         weightModels{i, 2} = calcWeightModel(refSelfZmn(:, i), refTriZmn(:, i), refNonSingZmn(:, i),...
     selfZmnTerms(:,:, i), triZmnTerms(:,:, i), nonSingZmnTerms(:,:, i), nonSingZmnProp,clusterInd,nonSingEdgeLabels,edgeLengths, clusterMaxEdgeLength,singDataThresh, addBias,useProjectedEdges,minPercentImprov, 0);
 
@@ -163,6 +172,8 @@ function [mlmom] = runMLMoMsolver(Const, Solver_setup, zMatrices)
     mlmom.weightModels =weightModels;
     
     %matrices
+    mlmom.allTerms = allTerms;
+    mlmom.allProperties = allProperties;
     mlmom.singInd = singInd;
     mlmom.edgeLengths = edgeLengths;
     mlmom.nonSingZmnProp = nonSingZmnProp;
@@ -175,7 +186,10 @@ function [mlmom] = runMLMoMsolver(Const, Solver_setup, zMatrices)
     mlmom.propScale = propScale;
     mlmom.clusterSizes = clusterSizes;
 
-    %scalars  
+    %scalars
+    mlmom.includeRealCalc = includeRealCalc;
+    mlmom.clusterSizeScale = clusterSizeScale;
+    mlmom.minPercentImprov = minPercentImprov;
     mlmom.useProjectedEdges =useProjectedEdges;
     mlmom.numInitClusterPoints = numInitClusterPoints;
     mlmom.numInitUnclusteredPoints = numInitUnclusteredPoints;
@@ -191,10 +205,10 @@ function [mlmom] = runMLMoMsolver(Const, Solver_setup, zMatrices)
     % ------------ CALCULATE Z MATRICES  ------------
     message_fc(Const, sprintf('  Predicting z-Matrices'));
     tic;
-    includeRealCalc = 1;
+    %includeRealCalc = 1;
     returnUnity = 1;
     [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZmnTerms,...
-        nonSingZmnTerms, nonSingZmnProp, singInd,edgeLengths, includeRealCalc,returnUnity);
+        nonSingZmnTerms, nonSingZmnProp, singInd,edgeLengths,returnUnity);
     mlmom.predZmn = predZmn;
     mlmom.unityZmn = unityZmn;
     predictCalcTime = toc;

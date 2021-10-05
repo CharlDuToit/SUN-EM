@@ -1,7 +1,8 @@
-function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp, singInd,edgeLengths, includeRealCalc, returnUnity)
+function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp, singInd,edgeLengths, returnUnity)
     
     %numClusters = numel(mlmom.clusterMeans(:,1));
     %maxClusterError = 10*ones(numClusters,1);
+    includeRealCalc = mlmom.includeRealCalc;
     useProjectedEdges = mlmom.useProjectedEdges;
     clusterMaxEdgeLength = mlmom.clusterMaxEdgeLength;
     maxClusterError = mlmom.maxClusterError;
@@ -44,7 +45,9 @@ function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZm
         nonSingCount = 0;
         triCount = 0;
         
-        realWeightsInd = weightModels{freq,1}.nonSingWeightsInd;
+        if (includeRealCalc)
+             realWeightsInd = weightModels{freq,1}.nonSingWeightsInd;
+        end
         imagWeightsInd = weightModels{freq,2}.nonSingWeightsInd;
         
         for mm = 1:numEdges
@@ -87,7 +90,7 @@ function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZm
                         unityZmn(mm,nn,freq) = sum(nonSingZmnTerms(nonSingCount, 1:numTerms, freq)) ;
                     end
                     prop = nonSingZmnProp(nonSingCount,:);                  
-                    [err, ind] = calcMinError(clusterMeans(imagWeightsInd,:), prop, propScale);
+                    [err, ind] = calcMinClusterError(clusterMeans(imagWeightsInd,:), prop, propScale);
                     
                     %if (maxClusterError(ind) < err)
                     clusterIndex = imagWeightsInd(ind);
@@ -168,11 +171,11 @@ function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZm
 
 end
 
-function [err, ind] = calcMinError(clusterMeans, prop, propScale)
-    %multiplying distance of cluster and prop does not affect log
-   % propScale = [4 1 0.6];
-    %[err, ind] =min(abs( log(clusterMeans(:,1)/prop(1) ) ) + (clusterMeans(:,2) - prop(2)).^2 + (clusterMeans(:,3) - prop(3)).^2);
-    [err, ind] =min(propScale(1) * abs( log(clusterMeans(:,1)/prop(1) ) ) +...
-    propScale(2)*abs(clusterMeans(:,2) - prop(2)) + ...
-    propScale(3)*abs(clusterMeans(:,3) - prop(3)));
-end
+% function [err, ind] = calcMinError(clusterMeans, prop, propScale)
+%     %multiplying distance of cluster and prop does not affect log
+%    % propScale = [4 1 0.6];
+%     %[err, ind] =min(abs( log(clusterMeans(:,1)/prop(1) ) ) + (clusterMeans(:,2) - prop(2)).^2 + (clusterMeans(:,3) - prop(3)).^2);
+%     [err, ind] =min(propScale(1) * abs( log(clusterMeans(:,1)/prop(1) ) ) +...
+%     propScale(2)*abs(clusterMeans(:,2) - prop(2)) + ...
+%     propScale(3)*abs(clusterMeans(:,3) - prop(3)));
+% end
