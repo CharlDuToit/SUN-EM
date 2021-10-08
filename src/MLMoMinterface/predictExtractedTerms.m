@@ -1,4 +1,4 @@
-function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp, singInd,edgeLengths, returnUnity)
+function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp, singInd,edgeLengths, returnUnity, errorCode)
     
     %numClusters = numel(mlmom.clusterMeans(:,1));
     %maxClusterError = 10*ones(numClusters,1);
@@ -90,7 +90,7 @@ function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZm
                         unityZmn(mm,nn,freq) = sum(nonSingZmnTerms(nonSingCount, 1:numTerms, freq)) ;
                     end
                     prop = nonSingZmnProp(nonSingCount,:);                  
-                    [err, ind] = calcMinClusterError(clusterMeans(imagWeightsInd,:), prop, propScale);
+                    [err, ind] = calcMinClusterError(clusterMeans(imagWeightsInd,:), prop, propScale, errorCode);
                     
                     %if (maxClusterError(ind) < err)
                     clusterIndex = imagWeightsInd(ind);

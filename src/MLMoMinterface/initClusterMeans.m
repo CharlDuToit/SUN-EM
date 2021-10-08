@@ -1,10 +1,10 @@
-function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterSizes, threshDist, minClusterSize, minPointsDynamicRegion)
+function [clusterMeans, numClass, numNoClass] = initClusterMeans(properties,clusterSizes, threshDist, minSize, minPointsDynamicRegion)
   % Assume planar, similar edge lengths
   % prop 1: distance
   % prop 2: edge direction dot edge direction
   % prop 3: edge direction dot displacement
   
-   [~, numProp] = size(prop);
+   [~, numProp] = size(properties);
   
    %Initialise cluster size of each property
     numDirDotDirClusters = clusterSizes(1); 
@@ -12,8 +12,8 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterSiz
     numPreThreshDistClusters = clusterSizes(3);
     numPostThreshDistClusters = clusterSizes(4);
     
-    maxDist = max(prop(:,1));
-    minDist = min(prop(:,1));
+    maxDist = max(properties(:,1));
+    minDist = min(properties(:,1));
     
     % intervals for properties
     %distInterval = hypspace(minDist, threshDist, numPreThreshDistClusters);
@@ -41,8 +41,14 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterSiz
     numSteps = 10;
     totalClusters = 0;
     maxClusters = (numDistClusters- 1) * (numDirDotDirClusters -1) * (numDirDotDispClusters-1);
-    clusterMeans = zeros(numel(maxClusters), numProp);
+    clusterMeans = zeros(maxClusters, numProp);
   
+%     clusterIntervals = cell(3,1);
+%     clusterIntervals{1} = distInterval;
+%     clusterIntervals{2} =orientationInterval;
+%     clusterIntervals{3} =radialInterval;
+%     [clusterMeans2, numNoClass2, numNoClass2] = initClusterMeans_v2(properties,clusterIntervals,  minSize);
+    
     %Absolote value of dot products (might want negative values for non
     %planar structures)
    % prop(:,2) = abs(prop(:,2));
@@ -63,20 +69,20 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterSiz
                 low_dir_dot_disp = radialInterval(k) + dirDotDispOffset;
                 high_dir_dot_disp = radialInterval(k+1) + dirDotDispOffset;
                      
-                if (low_dist > maxDist || low_dir_dot_dir > 1 || low_dir_dot_disp > 1) 
-                    break 
-                end
+%                 if (low_dist > maxDist || low_dir_dot_dir > 1 || low_dir_dot_disp > 1) 
+%                     break 
+%                 end
                 
-                ind = find(prop(:,1) >= low_dist & prop(:,1) <= high_dist & ...
-                    prop(:,2) >= low_dir_dot_dir & prop(:,2) <= high_dir_dot_dir &...
-                    prop(:,3) >= low_dir_dot_disp & prop(:,3) <= high_dir_dot_disp  );              
+                ind = find(properties(:,1) >= low_dist & properties(:,1) <= high_dist & ...
+                    properties(:,2) >= low_dir_dot_dir & properties(:,2) <= high_dir_dot_dir &...
+                    properties(:,3) >= low_dir_dot_disp & properties(:,3) <= high_dir_dot_disp  );              
                 [N, ~]= size(ind);
                 
-                if (N >= minClusterSize)                   
+                if (N >= minSize)                   
                     
                     numClass = numClass + N;
                     totalClusters = totalClusters + 1;
-                    clusterMeans(totalClusters, :) = sum(prop(ind,:),1)/N;
+                    clusterMeans(totalClusters, :) = sum(properties(ind,:),1)/N;
 
                 % dynmaic region size changes    
                 else 
@@ -86,7 +92,7 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterSiz
                         dirDotDispStep = (maxIncrease / numSteps) * (radialInterval(k+1) - radialInterval(k));
                         
                         step = 0;
-                        while (N < minClusterSize && step < numSteps)
+                        while (N < minSize && step < numSteps)
                             step = step + 1;
                             %distOffset = distOffset + distStep;
                             %dirDotDirOffset = dirDotDirOffset + dirDotDirStep;
@@ -96,18 +102,18 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterSiz
                             %high_dir_dot_dir = high_dir_dot_dir + dirDotDirStep;                       
                             high_dir_dot_disp = high_dir_dot_disp + dirDotDispStep;
                             
-                            ind = find(prop(:,1) >= low_dist & prop(:,1) <= high_dist & ...
-                                prop(:,2) >= low_dir_dot_dir & prop(:,2) <= high_dir_dot_dir &...
-                                prop(:,3) >= low_dir_dot_disp & prop(:,3) <= high_dir_dot_disp  );
+                            ind = find(properties(:,1) >= low_dist & properties(:,1) <= high_dist & ...
+                                properties(:,2) >= low_dir_dot_dir & properties(:,2) <= high_dir_dot_dir &...
+                                properties(:,3) >= low_dir_dot_disp & properties(:,3) <= high_dir_dot_disp  );
                             
                             [N, ~]= size(ind);
                             
                         end % while 
                     end % N > 0
-                    if (N >= minClusterSize)   
+                    if (N >= minSize)   
                         numClass = numClass + N;
                         totalClusters = totalClusters + 1;
-                        clusterMeans(totalClusters, :) = sum(prop(ind,:),1)/N;      
+                        clusterMeans(totalClusters, :) = sum(properties(ind,:),1)/N;      
                     else
                         numNoClass = numNoClass + N;
 

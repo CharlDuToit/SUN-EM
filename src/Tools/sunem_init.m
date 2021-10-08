@@ -122,7 +122,7 @@ function Const = sunem_init(Const, yVectors)
     end
     
     
-        % ================================    
+    % ================================
     try
         set = false;
         if (Const.runMLMoMsolver)
@@ -132,7 +132,21 @@ function Const = sunem_init(Const, yVectors)
     catch
         if (~set)
             % Solver not activated
-           Const.runMLMoMsolver = false;
+            Const.runMLMoMsolver = false;
+        end
+    end
+    
+    % ================================
+    try
+        set = false;
+        if (Const.runMLMoMAddTrianglessolver)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+            Const.runMLMoMAddTrianglessolver = false;
         end
     end
     

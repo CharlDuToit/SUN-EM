@@ -6,11 +6,12 @@ Const.FEKOrhsfilename          = 'square_plate.rhs'; % ?
 Const.FEKOoutfilename          = 'square_plate.out'; % 
 Const.FEKOefefilename          = 'square_plate.efe'; % ?
 Const.FEKOffefilename          = 'square_plate.ffe'; % ?
-Const.runMLMoMsolver              = true;
+
 
 [Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const);
 [Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
 Const.QUAD_PTS = 1;
+Const.runMLMoMsolver = true;
 Const.MLMoMClusterSizeScale = 1;
 Const.MLMoMMinPercentImprov = 0;
 Const.MLMoMIncludeRealCalc = 0;

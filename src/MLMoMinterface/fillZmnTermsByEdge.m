@@ -1,6 +1,7 @@
 % function [terms, singIndices,...
 %     dist,edge_mm_dir_dot_edge_nn_dir, edge_mm_dir_dot_edge_nn_disp ] = fillZmnTermsByEdge(Const,Solver_setup)
-function [terms, singIndices, properties] = fillZmnTermsByEdge(Const,Solver_setup)   
+%function [terms, singIndices, properties] = fillZmnTermsByEdge(Const,Solver_setup)   
+function [terms, singIndices] = fillZmnTermsByEdge(Const,Solver_setup) 
     %fillZmnTermsByEdge
     %   Date: 2021.08.07
     %   Usage:
@@ -42,38 +43,26 @@ function [terms, singIndices, properties] = fillZmnTermsByEdge(Const,Solver_setu
     node_coord = Solver_setup.nodes_xyz;              % Replacing global NODE_COORD
     ell = Solver_setup.rwg_basis_functions_length_m;  % Replacing global ELL
     
-    non_sing_quad_pts = Const.QUAD_PTS;
-    sing_quad_pts = Const.QUAD_PTS;
+
     sing     = Const.SING;
     eps_0    = Const.EPS_0;
     mu_0     = Const.MU_0;
     
-    if (sing_quad_pts < 2)
-        sing_quad_pts = 3;
-    end
-        
-    % Extract edge direction
-    edge_nodes = Solver_setup.rwg_basis_functions_shared_edge_nodes;
-    edge_dir = node_coord(edge_nodes(:,1), :) - node_coord(edge_nodes(:,2), :);
-    edge_dir_mag = sqrt(edge_dir(:,1).^2 + edge_dir(:,2).^2 + edge_dir(:,3).^2);
-    edge_dir = edge_dir ./edge_dir_mag; 
-    
-    % Extract the edge midpoints
-    edge_c = Solver_setup.rwg_basis_functions_shared_edge_centre;
-
-    % Extract the triangle midpoints
-    r_c = Solver_setup.triangle_centre_point;
-    rho_c_pls = Solver_setup.rho_c_pls;
-    rho_c_mns = Solver_setup.rho_c_mns;
-
     % Set some general parameters
     number_of_frequencies = Solver_setup.frequencies.freq_num; % Number of frequencies
     Z.numFreq = number_of_frequencies;
     Z.mBasis  = num_dofs; % number of rows (testing/field functions)
     Z.nBasis  = num_dofs; % number of cols (basis/source  functions)
     
-    % Allocate some space for our impedance matrix
-    %Z.values = complex(zeros(num_dofs,num_dofs,number_of_frequencies)); % Generalized impedance matrix.
+    % == start == Charl modification
+    non_sing_quad_pts = Const.QUAD_PTS;
+    sing_quad_pts = Const.QUAD_PTS;
+    
+    if (sing_quad_pts < 2)
+        sing_quad_pts = 3;
+    end
+    
+    %properties = calcProperties(Solver_setup);
     
     terms = complex(zeros(num_dofs,num_dofs, 8, number_of_frequencies));
     %terms(:,:,1) = A_m_pls_n_pls
@@ -85,13 +74,18 @@ function [terms, singIndices, properties] = fillZmnTermsByEdge(Const,Solver_setu
     %terms(:,:,7) = A_m_mns_n_mns
     %terms(:,:,8) = Phi_m_mns_n_mns
     
-    dist = zeros(num_dofs,num_dofs);
-    orientation = zeros(num_dofs,num_dofs);
-    radial = zeros(num_dofs,num_dofs);
-    properties = zeros(num_dofs, num_dofs, 3); %dist, dir dot dir, dir dot disp
-    
     singIndices = zeros(num_dofs ,num_dofs);
     singIndicesCalculated = false;
+    
+    %  == end == Charl modification
+    
+    % Extract the triangle midpoints
+    r_c = Solver_setup.triangle_centre_point;
+    rho_c_pls = Solver_setup.rho_c_pls;
+    rho_c_mns = Solver_setup.rho_c_mns;
+
+    % Allocate some space for our impedance matrix
+    %Z.values = complex(zeros(num_dofs,num_dofs,number_of_frequencies)); % Generalized impedance matrix. 
 
     % We will be calculating the Z matrix at each of the various frequencies:
     for freq_index = 1:number_of_frequencies
@@ -248,38 +242,8 @@ function [terms, singIndices, properties] = fillZmnTermsByEdge(Const,Solver_setu
                     %Amn_pls = Amn_pls_source_pls + Amn_pls_source_mns;
                     %Amn_mns = Amn_mns_source_pls + Amn_mns_source_mns;
                     
-                    % Geometry properties only have to calculated once
-                    if (~singIndicesCalculated)
-                        %edge_c_mm  = edge_c(mm, :);
-                        %edge_c_nn  = edge_c(nn, :);
-                       
-                        disp = edge_c(nn, :) - edge_c(mm, :);
-                        %properties(mm,nn,:) = calcProp(edge_dir(mm,:),edge_dir(nn,:),disp);
-%                        [dist(mm,nn), orientation(mm,nn), radial(mm,nn) ] = calcProp(edge_dir(mm,:),edge_dir(nn,:),disp);
-                        dist(mm,nn) =  norm(disp);
-                        orientation(mm,nn) = calcAngle(edge_dir(mm,:),edge_dir(nn,:) );
-                        %1st  symmetry 
-                        if (orientation(mm,nn) < 0)
-                            orientation(mm,nn) = orientation(mm,nn) + pi;
-                        end
-                        %avoid divide by zero
-                        if (mm ~= nn)
-                            %radial(mm,nn) = dot( edge_dir(mm,:), disp/dist(mm,nn));
-                            radial(mm,nn) = calcAngle(edge_dir(mm,:),disp );
-                            % 1st symmetry
-                            if (radial(mm,nn) < 0)
-                                radial(mm,nn) = radial(mm,nn) + pi;
-                            end
-                            % 2nd symmetry
-                            if (radial(mm,nn) > pi/2)
-                                orientation(mm,nn) = pi - orientation(mm,nn);
-                                radial(mm,nn) = pi - radial(mm,nn);
-                            end
-                            %radial(mm,nn) = dot( edge_dir(mm,:), disp/dist(mm,nn));
-                        end
-                        %orientation(mm,nn) =dot(edge_dir(mm,:),edge_dir(nn,:) );
-                    end
-                    
+                   
+                    % ==== use when not using data for add triangles
 %                     if (mm ~= nn)
 %                         [indices] = arrangeTermIndices(Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_trianglePlus(mm),:), ...
 %                             Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_triangleMinus(mm),:), ...
@@ -304,9 +268,6 @@ function [terms, singIndices, properties] = fillZmnTermsByEdge(Const,Solver_setu
         singIndicesCalculated = true;
 
     end %for freq_index = 1:Solver_setup.frequencies.freq_num 
-    properties(:,:,1) = dist;
-    properties(:,:,2) = orientation;
-    properties(:,:,3) = radial;
    
 end %function FillZMatrixByEdge
 

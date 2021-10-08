@@ -1,9 +1,8 @@
-function [clusterMeans, clusterInd, clusterCounts,maxClusterError, totError, numIter, tol] = calcClusterMeans(prop,clusterMeans, propScale, maxIter, tol)
-    
-
+function [clusterMeans, clusterInd, clusterCounts,maxClusterError, totError, numIter, tol] = calcClusterMeans(prop,clusterMeans, propScale, maxIter, tol, errorCode)
+   
     oldTotError = 0;
     for i = 1:maxIter
-        [clusterMeans,totError] = calcNewMeans(prop,clusterMeans,propScale );
+        [clusterMeans,totError] = calcNewMeans(prop,clusterMeans,propScale, errorCode );
         t = abs(oldTotError - totError)/totError;
         oldTotError = totError;
         if (t < tol )
@@ -14,16 +13,14 @@ function [clusterMeans, clusterInd, clusterCounts,maxClusterError, totError, num
     %tol = t;
     
     %cluster indicies are still assigned to the previous means
-    [~, clusterInd,clusterCounts,maxClusterError, totError] = assignClusters(prop,clusterMeans,propScale );
+    [~, clusterInd,clusterCounts,maxClusterError, totError] = assignClusters(prop,clusterMeans,propScale, errorCode );
     tol = abs(oldTotError - totError)/totError;
-    
     
 end
 
+function [clusterMeans, totError] = calcNewMeans(prop,clusterMeans,propScale, errorCode )
 
-function [clusterMeans, totError] = calcNewMeans(prop,clusterMeans,propScale )
-
-    [clusterTotals, ~,clusterCounts,~, totError] = assignClusters(prop,clusterMeans,propScale );
+    [clusterTotals, ~ ,clusterCounts,~, totError] = assignClusters(prop,clusterMeans,propScale, errorCode );
     
     nonEmptyClusterInd = find(clusterCounts > 0);  
     numNonEmptyClusters = numel(nonEmptyClusterInd);
@@ -36,7 +33,7 @@ function [clusterMeans, totError] = calcNewMeans(prop,clusterMeans,propScale )
     
 end
 
-function [clusterTotals, clusterInd,clusterCounts,maxClusterError, totError] = assignClusters(prop,clusterMeans,propScale )
+function [clusterTotals, clusterInd, clusterCounts,maxClusterError, totError] = assignClusters(prop,clusterMeans,propScale, errorCode )
     [numPoints, numProp] = size(prop);
     [numClusters, ~] = size(clusterMeans);
     
@@ -44,13 +41,14 @@ function [clusterTotals, clusterInd,clusterCounts,maxClusterError, totError] = a
     clusterInd = zeros(numPoints, 1);
     clusterTotals = zeros(numClusters,numProp);
     clusterCounts = zeros(numClusters,1);
+    
     totError = 0;
     
     for k = 1:numPoints
         %[err, ind] =min((clusterMeans(:,1) - prop(k,1)).^2 + (clusterMeans(:,2) - prop(k,2)).^2 + (clusterMeans(:,3) - prop(k,3)).^2);
-        [err, ind] = calcMinClusterError(clusterMeans, prop(k,:),propScale);
+        [err, ind] = calcMinClusterError(clusterMeans, prop(k,:),propScale, errorCode);
         clusterTotals(ind, :) = clusterTotals(ind, :) + prop(k,:);
-        clusterCounts(ind, :) = clusterCounts(ind, :) + 1;
+        clusterCounts(ind) = clusterCounts(ind) + 1;
         clusterInd(k) = ind;
         if (maxClusterError(ind) < err)
             maxClusterError(ind) = err;
@@ -58,19 +56,3 @@ function [clusterTotals, clusterInd,clusterCounts,maxClusterError, totError] = a
         totError = totError + err;
     end
 end
-
-% function [err, ind] = calcMinError(clusterMeans, prop, propScale)
-%     %multiplying distance of cluster and prop does not affect log
-%    % propScale = [4 1 0.6];
-%     %[err, ind] =min(abs( log(clusterMeans(:,1)/prop(1) ) ) + (clusterMeans(:,2) - prop(2)).^2 + (clusterMeans(:,3) - prop(3)).^2);
-%     [err, ind] =min(propScale(1) * abs( log(clusterMeans(:,1)/prop(1) ) ) +...
-%     propScale(2)*abs(clusterMeans(:,2) - prop(2)) + ...
-%     propScale(3)*abs(clusterMeans(:,3) - prop(3)));
-% end
-%clusterMeans = [0 0 0; 1 1 1; 2 2 2; 3 3 3; 4 4 4; 5 5 5];
-%prop = [4.5 4.6 4.6; 3.9 3.9 3.9; 0 0 1];
-
-
-%(clusterMeans(:,1) - prop(:,1)).^2 + (clusterMeans(:,2) - prop(:,2)).^2 + (clusterMeans(:,3) - prop(:,3)).^2;
-%(clusterMeans(:,1) - prop(1,1)).^2 + (clusterMeans(:,2) - prop(1,2)).^2 + (clusterMeans(:,3) - prop(1,3)).^2
-%[val, ind] =min((clusterMeans(:,1) - prop(1,1)).^2 + (clusterMeans(:,2) - prop(1,2)).^2 + (clusterMeans(:,3) - prop(1,3)).^2)

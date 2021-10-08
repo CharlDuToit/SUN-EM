@@ -1,7 +1,8 @@
 function [allTerms, allProperties, selfZmnTerms, triZmnTerms, nonSingZmnTerms, nonSingZmnProp,nonSingEdgeLabels, singInd ] = extractZmnInfo(Const, Solver_setup)
     
     %[allTerms,singInd, dist,edge_mm_dir_dot_edge_nn_dir, edge_mm_dir_dot_edge_nn_disp] = fillZmnTermsByEdge(Const,Solver_setup);
-    [allTerms,singInd, allProperties] = fillZmnTermsByEdge(Const,Solver_setup);
+    [allTerms,singInd] = fillZmnTermsByEdge(Const,Solver_setup);
+    allProperties = calcProperties(Solver_setup);
     [numEdges, ~, numTerms, numFreq] = size(allTerms);
     
     nonSingZmnTerms = zeros(numEdges^2 - numEdges, numTerms, numFreq);
