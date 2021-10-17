@@ -1,4 +1,4 @@
-function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup, zMatrices)
+function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
     %runMLMoMsolver_addTriangles
     %   Usage:
     %       [mlmom] = runMLMoMsolver_addTriangles(Const, Solver_setup, zMatrices)
@@ -49,13 +49,16 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup, z
     %clusterSizeScale = Const.MLMoMClusterSizeScale;
     %minPercentImprov = Const.MLMoMMinPercentImprov;
     %includeRealCalc = Const.MLMoMIncludeRealCalc;
-    numFreq = zMatrices.numFreq;
+    
+    %numFreq = zMatrices.numFreq;
+    numFreq = numel(Solver_setup.frequencies.freq_num);
+    
     %edgeLengths = Solver_setup.rwg_basis_functions_length_m;
     %numOldEdges = Solver_setup.num_mom_basis_functions;
     
     addBias = 0;
     minClusterSize = 8;
-    singDataThresh = 1e-63; %1e-44 
+    singDataThresh = 1e-44; %1e-44 %13-60
     maxIter = 6;
     minTol = 0.02;
     
@@ -69,6 +72,7 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup, z
     oldCentreDistances = calcCentreDistance(Solver_setup );
     oldProperties = calcProperties(Solver_setup);
     oldEdgeLengths = Solver_setup.rwg_basis_functions_length_m;
+    oldRhoProperties = calcRhoProperties(Solver_setup);
     [~ , ~, numTerms] = size(oldTerms);
     oldZmnTime = toc;
     
@@ -89,13 +93,14 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup, z
      [newTerms, newSingInd, newLinkOld, groupIndices] = ...
          projectOldSolverSetup(new_solver_setup, Solver_setup,newEdgeLinkOldEdge, newEdgeParallelExternalEdgeLinkOldInternalEdge, oldTerms, oldSingInd, newCentreDistances, oldCentreDistances );
      newProperties = calcProperties(new_solver_setup);
+     newRhoProperties = calcRhoProperties(new_solver_setup);
      projectTime = toc;
     
      % ======================= INIT CLUSTERS =======================
      % Initialise cluster means from new and old properties
      message_fc(Const, sprintf('  Initializing clusters '));
      tic;
-     groupMeans = initGroupMeans(newLinkOld, newProperties, oldProperties, newEdgeLengths, oldEdgeLengths, groupIndices, minClusterSize);
+     groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, oldProperties, newEdgeLengths, oldEdgeLengths ,newRhoProperties,oldRhoProperties, minClusterSize);
      initClustersTime = toc;
      
      % ======================= CALC CLUSTERS =======================
@@ -108,65 +113,124 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup, z
      % ======================= CALC REFERENCE ZMN =======================
      %message_fc(Const, sprintf('  Calculating reference matrices '));
      tic;
+     quadPts = Const.QUAD_PTS;
+     Const.QUAD_PTS = 12;
      [refZMatrices] = FillZMatrixByEdge(Const,new_solver_setup) ;
      refZmn = refZMatrices.values;
+     Const.QUAD_PTS = quadPts;
      refZmnTime = toc;
 
      % ======================= CALC WEIGHTS =======================
      % Calculate weights for real and imag at each frequency
      message_fc(Const, sprintf('  Calculating regression models '));
      tic;
-     
+     %erros
+     predFrobNorms = zeros(numFreq, 3);
+     projFrobNorms = zeros(numFreq, 3);
+     refFrobNorms = zeros(numFreq, 3);
+     predRelNormPercentError = zeros(numFreq, 3);
+     errorSummary = cell(numFreq, 2); 
+     predRowRelNormPercentError = zeros(numNewEdges, numFreq);
+     %weights
      weightModels = cell(numFreq, 2); % real and imaginary models
      predZmn = zeros(numNewEdges, numNewEdges,numFreq );
      projZmn = zeros(numNewEdges, numNewEdges,numFreq );
      for f = 1:numFreq
+         %weights
          [weightModels{f, 1},projZmnReal, predZmnReal ] = calcGroupWeights(groupIndices, real(newTerms(:,:,:,f)), real(refZmn(:,:,f)), singDataThresh);
          [weightModels{f, 2},projZmnImag ,predZmnImag ] = calcGroupWeights(groupIndices, imag(newTerms(:,:,:,f)), imag(refZmn(:,:,f)), singDataThresh);
          projZmn(:, :, f) = projZmnReal + 1i * projZmnImag;
          predZmn(:, :, f) = predZmnReal + 1i * predZmnImag;
+         
+         %errors
+         [compReal] = compareZmn(real(refZmn(:, :, f)), real(predZmn(:, :, f)), real(projZmn(:, :, f)), newSingInd);
+         [compImag] = compareZmn(imag(refZmn(:, :, f)), imag(predZmn(:, :, f)), imag(projZmn(:, :, f)), newSingInd);
+         errorSummary{f,1} = compReal;
+         errorSummary{f,2} = compImag;
+         
+         predRelNormPercentError(f,1) = compReal.predRelNormPercentError;
+         predRelNormPercentError(f,2)= compImag.predRelNormPercentError;
+         [~, predRelNormPercentError(f,3)] = calcError(refZmn(:, :, f), predZmn(:, :, f));
+
+         for mm = 1:numNewEdges
+             [~, predRowRelNormPercentError(mm)] = calcError(refZmn(mm, :, f), predZmn(mm, :, f));
+         end
+         
+         predFrobNorms(f,1) = compReal.predFrobNorm;
+         predFrobNorms(f,2) = compImag.predFrobNorm;
+         predFrobNorms(f,3) = calcFrobNorm(predZmn(:,:,f));
+         
+         projFrobNorms(f,1) = compReal.unityFrobNorm;
+         projFrobNorms(f,2) = compImag.unityFrobNorm;
+         projFrobNorms(f,3) = calcFrobNorm(projZmn(:,:,f));
+         
+         refFrobNorms(f,1) = compReal.refFrobNorm;
+         refFrobNorms(f,2) = compImag.refFrobNorm;
+         refFrobNorms(f,3) = calcFrobNorm(refZmn(:,:,f));
+         
+
      end
      regressionTime = toc;
      message_fc(Const, sprintf('  Finished ML-MOM training '));
      
-     % ======================= FROBENIUS NORMS  =======================
-     %real imag complex
-     predFrobNorms = zeros(numFreq, 3);
-     projFrobNorms = zeros(numFreq, 3);
-     refFrobNorms = zeros(numFreq, 3);
-     for i = 1:numFreq
-         predFrobNorms(numFreq,1) = calcFrobNorm(real(predZmn(:,:,numFreq)));
-         predFrobNorms(numFreq,2) = calcFrobNorm(imag(predZmn(:,:,numFreq)));
-         predFrobNorms(numFreq,3) = calcFrobNorm(predZmn(:,:,numFreq));
-         
-         projFrobNorms(numFreq,1) = calcFrobNorm(real(projZmn(:,:,numFreq)));
-         projFrobNorms(numFreq,2) = calcFrobNorm(imag(projZmn(:,:,numFreq)));
-         projFrobNorms(numFreq,3) = calcFrobNorm(projZmn(:,:,numFreq));
-         
-         refFrobNorms(numFreq,1) = calcFrobNorm(real(refZmn(:,:,numFreq)));
-         refFrobNorms(numFreq,2) = calcFrobNorm(imag(refZmn(:,:,numFreq)));
-         refFrobNorms(numFreq,3) = calcFrobNorm(refZmn(:,:,numFreq));
+     
+     %======================= PREDICTION TIMING  =======================
+     message_fc(Const, sprintf('  Obtaining prediction timing '));
+     %==================================================================
+     
+     % ======================= ASSIGN  ======================= 
+     tic
+     groupIndices = assignGroupClusters(groupMeans, groupIndices,newLinkOld, newProperties, oldProperties,newEdgeLengths, oldEdgeLengths, newRhoProperties, oldRhoProperties);
+     assignTime = toc;
+     
+     %======================= MULTIPLY WEIGHTS  ======================= 
+     tic;
+     predZmn = zeros(numNewEdges, numNewEdges,numFreq );
+     projZmn = zeros(numNewEdges, numNewEdges,numFreq );
+     for f = 1:numFreq
+         [~, projZmnReal, predZmnReal] = applyGroupWeights(weightModels{f,1}, groupIndices, real(newTerms(:,:,:,f)), real(refZmn(:,:,f)), 0);
+         [~, projZmnImag, predZmnImag] = applyGroupWeights(weightModels{f,2}, groupIndices, imag(newTerms(:,:,:,f)), imag(refZmn(:,:,f)), 0);
+         projZmn(:, :, f) = projZmnReal + 1i * projZmnImag;
+         predZmn(:, :, f) = predZmnReal + 1i * predZmnImag;
      end
+     multiplyTime = toc;
+     
+    % ======================= DISPLAY TIMING DATA =======================
+    predictTime = oldZmnTime + addTrianglesTime + projectTime + assignTime + multiplyTime;
+
+    message_fc(Const, sprintf('  Input z-Matrices calculation time: %.3f s',oldZmnTime));
+    message_fc(Const, sprintf('  Add triangles time: %.3f s',addTrianglesTime));
+    message_fc(Const, sprintf('  Projection time: %.3f s',projectTime));
+    message_fc(Const, sprintf('  Cluster initialization time: %.3f s',initClustersTime));
+    message_fc(Const, sprintf('  Cluster calculation  time: %.3f s',calcClustersTime));
+    message_fc(Const, sprintf('  Reference z-Matrices time: %.3f s',refZmnTime));
+    message_fc(Const, sprintf('  Regression time: %.3f s',regressionTime));
+    message_fc(Const, sprintf('  Prediction time: %.3f s',predictTime));
+    
      
 %     % ======================= UPDATE STRUCT  ======================= 
       mlmomAddTriangles = [];
       
 %     %cells
       mlmomAddTriangles.weightModels =weightModels;
-
+      mlmomAddTriangles.errorSummary = errorSummary;
+      
       %structures
       mlmomAddTriangles.new_solver_setup = new_solver_setup;
       mlmomAddTriangles.groupIndices = groupIndices;
       mlmomAddTriangles.groupMeans = groupMeans;
       
 %     %matrices
+      %mlmomAddTriangles.frequencies = 
       mlmomAddTriangles.refZmn = refZmn;
       mlmomAddTriangles.projZmn = projZmn;
       mlmomAddTriangles.predZmn = predZmn;
       
+      mlmomAddTriangles.predRelNormPercentError = predRelNormPercentError;
       mlmomAddTriangles.refFrobNorms = refFrobNorms;
       mlmomAddTriangles.projFrobNorms = projFrobNorms;
       mlmomAddTriangles.predFrobNorms = predFrobNorms;
+      mlmomAddTriangles.predRowRelNormPercentError = predRowRelNormPercentError;
       
       mlmomAddTriangles.newLinkOld = newLinkOld;
       
@@ -182,7 +246,7 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup, z
       
       %constants
       mlmomAddTriangles.numFreq = numFreq;
-      mlmomAddTriangles.quadPts = Const.QUAD_PTS;
+      mlmomAddTriangles.quadPts = quadPts;
       mlmomAddTriangles.singDataThresh = singDataThresh;
       %timing
       mlmomAddTriangles.oldZmnTime = oldZmnTime;
@@ -192,6 +256,9 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup, z
       mlmomAddTriangles.calcClustersTime = calcClustersTime;
       mlmomAddTriangles.refZmnTime = refZmnTime;
       mlmomAddTriangles.regressionTime = regressionTime;
+      mlmomAddTriangles.assignTime = assignTime;
+      mlmomAddTriangles.multiplyTime = multiplyTime;
+      mlmomAddTriangles.predictTime = predictTime;
       
 
 %     mlmom.edgeLengths = edgeLengths;
@@ -212,28 +279,16 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup, z
 %     mlmom.maxDist = maxDist;
 %     mlmom.threshDist = threshDist;
 
-%     
-%     % ------------ CALCULATE Z MATRICES  ------------
-%     message_fc(Const, sprintf('  Predicting z-Matrices'));
-%     tic;
-%     %includeRealCalc = 1;
-%     returnUnity = 1;
-%     [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZmnTerms,...
-%         nonSingZmnTerms, nonSingZmnProp, oldSingInd,edgeLengths,returnUnity);
-%     mlmom.predZmn = predZmn;
-%     mlmom.unityZmn = unityZmn;
-%     predictCalcTime = toc;
-
-
-%     % ======================= DISPLAY TIMING DATA =======================
-
-%     message_fc(Const, sprintf('  Input z-Matrices calculation time: %.3f s',oldUnityZmnCalcTime));
-%     message_fc(Const, sprintf('  Clustering calculation time: %.3f s',clusterCalcTime));
-%     message_fc(Const, sprintf('  Regression calculation time: %.3f s',regressionCalcTime));
-%     message_fc(Const, sprintf('  Prediction calculation time: %.3f s',predictCalcTime));
-%     message_fc(Const, sprintf('  Input z-Matrices + Prediction calculation time: %.3f s',oldUnityZmnCalcTime + predictCalcTime));
-%        
-%     message_fc(Const,...
-%         '------------------------------------------------------------------------------------');
+%     mmInd = mlmomAddTriangles.groupIndices.twoUnique_pos_indices(:,1);
+%     nnInd =  mlmomAddTriangles.groupIndices.twoUnique_pos_indices(:,2);
+%     ref = zeros(numel(mmInd),1);
+%     proj = zeros(numel(mmInd),1);
+%     for k = 1:numel(mmInd)
+%         ref(k) = mlmomAddTriangles.refZmn(mmInd(k), nnInd(k), 1);
+%         proj(k) = mlmomAddTriangles.projZmn(mmInd(k), nnInd(k), 1);
+%     end
+       
+    message_fc(Const,...
+        '------------------------------------------------------------------------------------');
 
 end

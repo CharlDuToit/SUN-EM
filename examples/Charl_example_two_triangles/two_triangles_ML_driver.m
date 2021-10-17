@@ -19,6 +19,8 @@ Const.MLMoMIncludeRealCalc = 0;
 [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 
 mlmomAddTriangles = Solution.mlmomAddTriangles;
+%includeError = 1;
+%[predictedSetup] = predictSolverSetupAddTriangles(Const, Solver_setup, mlmomAddTriangles, includeError);
 
 %plot(Solver_setup.nodes_xyz(:,1), Solver_setup.nodes_xyz(:,2), '.', 'markerSize', 20);
 % [new_solver_setup, newEdgeLinkOldEdge, newEdgeParallelExternalEdgeLinkOldInternalEdge] = addTriangles(Solver_setup);

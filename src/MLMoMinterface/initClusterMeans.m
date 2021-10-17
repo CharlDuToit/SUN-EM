@@ -69,9 +69,6 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeans(properties,clus
                 low_dir_dot_disp = radialInterval(k) + dirDotDispOffset;
                 high_dir_dot_disp = radialInterval(k+1) + dirDotDispOffset;
                      
-%                 if (low_dist > maxDist || low_dir_dot_dir > 1 || low_dir_dot_disp > 1) 
-%                     break 
-%                 end
                 
                 ind = find(properties(:,1) >= low_dist & properties(:,1) <= high_dist & ...
                     properties(:,2) >= low_dir_dot_dir & properties(:,2) <= high_dir_dot_dir &...

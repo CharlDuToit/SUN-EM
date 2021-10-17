@@ -1,3 +1,15 @@
+
+mmInd = mlmomAddTriangles.groupIndices.twoUnique_pos_indices(:,1);
+nnInd =  mlmomAddTriangles.groupIndices.twoUnique_pos_indices(:,2);
+ref = zeros(numel(mmInd),1);
+proj = zeros(numel(mmInd),1);
+for k = 1:numel(mmInd)
+    ref(k,1) = mlmomAddTriangles.refZmn(mmInd(k), nnInd(k), 1);
+    proj(k,1) = mlmomAddTriangles.projZmn(mmInd(k), nnInd(k), 1);
+end
+ratio = zeros(numel(mmInd),2);
+ratio(:,1) = real(proj) ./ real(ref);
+ratio(:,2) = imag(proj) ./ imag(ref);
 % a = [];
 % if (eq(a,[]))
 %     b = 5;

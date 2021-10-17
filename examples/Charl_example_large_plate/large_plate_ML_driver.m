@@ -13,23 +13,36 @@ Const.FEKOffefilename          = 'square_plate.ffe'; % ?
 Const.QUAD_PTS = 1;
 Const.runMLMoMsolver = true;
 Const.MLMoMClusterSizeScale = 1;
-Const.MLMoMMinPercentImprov = 0;
+Const.MLMoMMinPercentImprov = 6;
 Const.MLMoMIncludeRealCalc = 0;
 [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 
 mlmom = Solution.mlmom;
 
-%plot(Solver_setup.nodes_xyz(:,1), Solver_setup.nodes_xyz(:,2), '.', 'markerSize', 20);
-%[new_solver_setup] = addTriangles(Solver_setup);
-%plot(new_solver_setup.nodes_xyz(:,1), new_solver_setup.nodes_xyz(:,2), '.', 'markerSize', 20);
-
-%first extract from .mat files
-
-%refZmn_plate = zMatrices_small_plate.values;
-%[predZmn_plate, unityZmn_plate, singInd_plate] = predictSolverSetup(Const,Solver_setup_plate, mlmom,1);
-%[comp_real] = compareZmn(refZmn_plate, predZmn_plate,unityZmn_plate,singInd_plate, 1, 1) ;
-%[comp_imag] = compareZmn(refZmn_plate, predZmn_plate, unityZmn_plate, singInd_plate, 1, 0);
-
+%%========COMPARE TIMING WITH 12 QUAD PTS=========
+% tic
+% Const.QUAD_PTS = 12;
+% [refZMatrices] = FillZMatrixByEdge(Const,Solver_setup) ;
+% refCalcTime = toc;
+% [comp_imag] = compareZmn(zMatrices.values, refZMatrices.values, refZMatrices.values, mlmom.singInd, 1, 0);
+%%======== COMPARE SAME SETUP AGAIN=========
 %Reuse training solver setup
 %[comp_real] = compareZmn(zMatrices.values, mlmom.predZmn, mlmom.unityZmn,mlmom.singInd, 1, 1) ;
 %[comp_imag] = compareZmn(zMatrices.values, mlmom.predZmn, mlmom.unityZmn, mlmom.singInd, 1, 0);
+
+
+%%========PREDICT DIFFERENT SETUP=========
+%first extract from .mat files
+
+%refZmn_plate = zMatrices_small_plate.values;
+%[predictedSetup_plate] = predictSolverSetup(Const,Solver_setup_plate, mlmom,zMatrices_small_plate, 1, 1);
+ 
+
+%%========COMPARE PREDICTIEED SETUP TIMING WITH 12 QUAD PTS=========
+%  tic
+%  Const.QUAD_PTS = 12;
+%  [threeQuadZMatrices] = FillZMatrixByEdge(Const,Solver_setup_plate) ;
+%  threeQuadCalcTime = toc;
+%  [comp_real] = compareZmn(real(zMatrices_small_plate.values), real(threeQuadZMatrices.values), real(threeQuadZMatrices.values), predictedSetup_plate.singInd);
+%  [comp_imag] = compareZmn(imag(zMatrices_small_plate.values), imag(threeQuadZMatrices.values), imag(threeQuadZMatrices.values), predictedSetup_plate.singInd);
+%  [comp_complex] = compareZmn(zMatrices_small_plate.values, threeQuadZMatrices.values, threeQuadZMatrices.values, predictedSetup_plate.singInd);

@@ -20,13 +20,22 @@ function [allTerms, allProperties, selfZmnTerms, triZmnTerms, nonSingZmnTerms, n
             if (mm == nn)
                 selfZmnTerms(mm, :, :) = allTerms(mm,mm, :, : );
             elseif (singInd(mm,nn))
+                [indices] = arrangeTermIndices(Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_trianglePlus(mm),:), ...
+                    Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_triangleMinus(mm),:), ...
+                    Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_trianglePlus(nn),:), ...
+                    Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_triangleMinus(nn),:));
+                allTerms(mm,nn,:,:) = allTerms(mm,nn,indices,:);
+                
                 triCount = triCount + 1;
                 triZmnTerms(triCount, :, :) = allTerms(mm,nn, :, : );
             else
+                [indices] = arrangeTermIndices(Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_trianglePlus(mm),:), ...
+                    Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_triangleMinus(mm),:), ...
+                    Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_trianglePlus(nn),:), ...
+                    Solver_setup.triangle_centre_point(Solver_setup.rwg_basis_functions_triangleMinus(nn),:));
+                allTerms(mm,nn,:,:) = allTerms(mm,nn,indices,:);
+                
                 nonSingCount = nonSingCount + 1;
-%                 nonSingZmnProp(nonSingCount, 1) = dist(mm,nn);
-%                 nonSingZmnProp(nonSingCount, 2) = edge_mm_dir_dot_edge_nn_dir(mm,nn);
-%                 nonSingZmnProp(nonSingCount, 3) = edge_mm_dir_dot_edge_nn_disp(mm,nn);
                 
                 nonSingZmnProp(nonSingCount, 1) = allProperties(mm,nn,1);
                 nonSingZmnProp(nonSingCount, 2) = allProperties(mm,nn,2);

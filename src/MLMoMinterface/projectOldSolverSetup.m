@@ -150,6 +150,7 @@ function [newAllTerms, newSingInd, newLinkOld, groupIndices] =...
                     
                     if (mmLinkType == 0) % lies on old edge
                         newAllTerms(mm,nn,:,freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,:,freq);
+                         %----
                         twoUnique_int_count = twoUnique_int_count  + 1;
                         twoUnique_int_indices(twoUnique_int_count, :) = [mm,nn];
                         newLinkOld(mm,nn, :) = [mmLinkOldEdge, mmLinkOldEdge];
@@ -159,22 +160,28 @@ function [newAllTerms, newSingInd, newLinkOld, groupIndices] =...
                         %              terms([3 4]) = terms([5 6]) 
                         % triangle plus of old edge has same shape as 
                         % triangle plus of new edge
-                        newAllTerms(mm,nn,[1 2],freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,[1 2],freq);
-                        newAllTerms(mm,nn,[7 8],freq) = newAllTerms(mm,nn,[1 2],freq);
+                        %----
+                        newAllTerms(mm,nn,:,freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,:,freq);
+                        %----                       
+                        %newAllTerms(mm,nn,[1 2],freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,[1 2],freq);
+                        %newAllTerms(mm,nn,[7 8],freq) = newAllTerms(mm,nn,[1 2],freq);
                         % reuse old terms for nonSing terms (+-, -+)
                         % will have errors if old trianlge minus has
                         % different shape than new triangle minus
-                        newAllTerms(mm,nn,[3 4 5 6],freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,[3 4 5 6],freq);
-                        
+                        %newAllTerms(mm,nn,[3 4 5 6],freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,[3 4 5 6],freq);
+                        %----
                         twoUnique_pos_count =twoUnique_pos_count  + 1;
                         twoUnique_pos_indices(twoUnique_pos_count, :) = [mm,nn];
                         newLinkOld(mm,nn, :) = [mmLinkOldEdge, mmLinkOldEdge];
                         
                     elseif (mmLinkType == -1 )% parallel to old edge, lies in triangle minus
-                        newAllTerms(mm,nn,[7 8],freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,[7 8],freq);
-                        newAllTerms(mm,nn,[1 2],freq) = newAllTerms(mm,nn,[7 8],freq);
-                        newAllTerms(mm,nn,[3 4 5 6],freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,[3 4 5 6],freq);
-                        
+                        %----
+                        newAllTerms(mm,nn,:,freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,:,freq);
+                        %----
+                        %newAllTerms(mm,nn,[7 8],freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,[7 8],freq);
+                        %newAllTerms(mm,nn,[1 2],freq) = newAllTerms(mm,nn,[7 8],freq);
+                        %newAllTerms(mm,nn,[3 4 5 6],freq) = oldAllTerms(mmLinkOldEdge,nnLinkOldEdge,[3 4 5 6],freq);
+                        %----
                         twoUnique_neg_count =twoUnique_neg_count  + 1;
                         twoUnique_neg_indices(twoUnique_neg_count, :) = [mm,nn];
                         newLinkOld(mm,nn, :) = [mmLinkOldEdge, mmLinkOldEdge];
@@ -184,19 +191,21 @@ function [newAllTerms, newSingInd, newLinkOld, groupIndices] =...
                         % within one of its triangles
                         % even more proned to error
                         % will be 1 or 2 old edges to select from
-                        
+                        %----
                         ind = find( newEdgeParallelExternalEdgeLinkOldInternalEdge(:, 1) == mm);
                         oldEdge = newEdgeParallelExternalEdgeLinkOldInternalEdge(ind(1), 2);        
                         newAllTerms(mm,nn,:,freq) = oldAllTerms(oldEdge,oldEdge,:,freq);
-                        
+                        %----
                         twoUnique_ext_count =twoUnique_ext_count  + 1;
                         twoUnique_ext_indices(twoUnique_ext_count, :) = [mm,nn];
                         newLinkOld(mm,nn, :) = [oldEdge, oldEdge];
 
                     end %if (mmLinkType == 0)
                     
-                    newAllTerms(mm,nn,AInd,freq) = 0.125* newAllTerms(mm,nn,AInd,freq);
-                    newAllTerms(mm,nn,PhiInd,freq) = 0.5* newAllTerms(mm,nn,PhiInd,freq);
+                    %newAllTerms(mm,nn,AInd,freq) = 0.5* newAllTerms(mm,nn,AInd,freq); % 0.125
+                    %newAllTerms(mm,nn,PhiInd,freq) = 0.25* newAllTerms(mm,nn,PhiInd,freq); % 0.25
+                    %newAllTerms(mm,nn,AInd,freq) = 0.125* newAllTerms(mm,nn,AInd,freq); % 0.125
+                    %newAllTerms(mm,nn,PhiInd,freq) = 0.25* newAllTerms(mm,nn,PhiInd,freq); % 0.25
                     
                 elseif (newTriPlus(mm) == newTriPlus(nn) || newTriPlus(mm) == newTriMinus(nn) ||...
                         newTriMinus(mm) == newTriPlus(nn) || newTriMinus(mm) == newTriMinus(nn))  %if mm == nn
@@ -253,7 +262,7 @@ function [newAllTerms, newSingInd, newLinkOld, groupIndices] =...
                         
                         if (threeUnique_parIntParInt_count > 0)
                             if ( eq(threeUnique_parIntParInt_indices(threeUnique_parIntParInt_count, :), [mm,nn])  )
-                                newAllTerms(mm,nn,:,freq) =  swapTerms(newAllTerms(mm,nn,:,freq), 3);
+                                newAllTerms(mm,nn,:,freq) =  swapTerms(newAllTerms(mm,nn,:,freq), 3, 1);
                             end
                         end
                         
@@ -311,20 +320,20 @@ function [newAllTerms, newSingInd, newLinkOld, groupIndices] =...
                         threeUnique_extExt_count  = threeUnique_extExt_count  + 1;
                         threeUnique_extExt_indices (threeUnique_extExt_count , :) = [mm,nn];
                     end
-                    newAllTerms(mm,nn,AInd,freq) = 0.125* newAllTerms(mm,nn,AInd,freq);
-                    newAllTerms(mm,nn,PhiInd,freq) = 0.5* newAllTerms(mm,nn,PhiInd,freq);
+                    %newAllTerms(mm,nn,AInd,freq) = 0.125* newAllTerms(mm,nn,AInd,freq);
+                    %newAllTerms(mm,nn,PhiInd,freq) = 0.5* newAllTerms(mm,nn,PhiInd,freq);
                     
                 else % if mm == nn
                     
                     %============= 4 unique triangles ==============
-                    %calculatedNonSingInd(mm,nn) = 1;
+                    sameOrientation = 0;
                     %%=== Main case 1 ====
                     % old relationship is non singular
                     % new edges are not parallel external edges
                     if (mmLinkType ~= 2 && nnLinkType ~= 2 && ~oldSingInd(mmLinkOldEdge,nnLinkOldEdge))
                         % There are 4 link types: -1, 0, 1
                         % 9 cases
-                        
+                        sameOrientation =1;
                         oldMM = mmLinkOldEdge;
                         oldNN = nnLinkOldEdge;
                         %------- both on old edge ----
@@ -388,7 +397,7 @@ function [newAllTerms, newSingInd, newLinkOld, groupIndices] =...
                     %%=== Main case 2 ====
                     elseif (mmLinkType ~= 2 && nnLinkType ~= 2 && oldSingInd(mmLinkOldEdge,nnLinkOldEdge))
                         % old terms involve 2 or 3 unique triangles
-                        
+                        sameOrientation =1;
                         oldEdgeNN = nnLinkOldEdge;
                         
                         ind = find (oldSingInd(:, oldEdgeNN) == 1);
@@ -585,10 +594,10 @@ function [newAllTerms, newSingInd, newLinkOld, groupIndices] =...
                     newLinkOld(mm,nn, :) = [oldMM, oldNN];
                     
                     [newAllTerms(mm,nn,:,freq)] = projectCentreDistances(oldAllTerms(oldMM,oldNN,:,freq),...
-                        newCentreDistances(mm,nn,:), oldCentreDistances(oldMM,oldNN,:));
+                        newCentreDistances(mm,nn,:), oldCentreDistances(oldMM,oldNN,:), sameOrientation);
                     
-                    newAllTerms(mm,nn,AInd,freq) = 0.125* newAllTerms(mm,nn,AInd,freq); %0.125 works best
-                    newAllTerms(mm,nn,PhiInd,freq) = 0.5* newAllTerms(mm,nn,PhiInd,freq); % 0.25 works best
+                    %newAllTerms(mm,nn,AInd,freq) = 0.125* newAllTerms(mm,nn,AInd,freq); %0.125 works best
+                    %newAllTerms(mm,nn,PhiInd,freq) = 0.5* newAllTerms(mm,nn,PhiInd,freq); % 0.25 works best
                     
                 end % if (mm == nn)
             end %for nn= 1:numNewEdges
@@ -672,7 +681,8 @@ function [newAllTerms, newSingInd, newLinkOld, groupIndices] =...
 
 end
 
-function [swappedTerms] = swapTerms(terms, swapCode )
+function [swappedTerms] = swapTerms(terms, swapCode, swapSign )
+    %used at line 256
     % There are 2 terms associated with every triangle pair between 4 triangles
     %terms(1) = A_m_pls_n_pls
     %terms(2) = Phi_m_pls_n_pls
@@ -693,20 +703,23 @@ function [swappedTerms] = swapTerms(terms, swapCode )
     switch swapCode
         case 1
             swappedTerms = terms([3 4 1 2 7 8 5 6]);
-            %swappedTerms(1,1,[1 3 5 7]) = -1 *swappedTerms(1,1,[1 3 5 7]) ;
+            if (swapSign)
+                swappedTerms(1,1,[1 3 5 7]) = -1 *swappedTerms(1,1,[1 3 5 7]) ;
+            end
         case 2
             swappedTerms = terms([5 6 7 8 1 2 3 4]);
-            %swappedTerms(1,1,[1 3 5 7]) = -1 *swappedTerms(1,1,[1 3 5 7]) ;
+            if (swapSign)
+                swappedTerms(1,1,[1 3 5 7]) = -1 *swappedTerms(1,1,[1 3 5 7]) ;
+            end
         case 3
             swappedTerms = terms([7 8 5 6 3 4 1 2]);
         otherwise
             swappedTerms = terms;    
     end
 
-
 end
 
-function [swappedTerms] = swapTermCodes(terms, termCodeOne, termCodeTwo )
+function [swappedTerms] = swapTermCodes(terms, termCodeOne, termCodeTwo, swapSign )
     %termCode:
     % 1: mPlus_nPlus
     % 2: mPlus_nMinus
@@ -720,24 +733,24 @@ function [swappedTerms] = swapTermCodes(terms, termCodeOne, termCodeTwo )
                 case 1
                     swappedTerms = terms;
                 case 2
-                    swappedTerms = swapTerms(terms, 1 );
+                    swappedTerms = swapTerms(terms, 1, swapSign );
                 case 3
-                    swappedTerms = swapTerms(terms, 2 );
+                    swappedTerms = swapTerms(terms, 2, swapSign );
                 case 4
-                    swappedTerms = swapTerms(terms, 3 );
+                    swappedTerms = swapTerms(terms, 3, swapSign );
                 otherwise
                     swappedTerms = terms;
             end
         case 2
             switch termCodeTwo
                 case 1
-                    swappedTerms = swapTerms(terms, 1 );
+                    swappedTerms = swapTerms(terms, 1, swapSign );
                 case 2
                     swappedTerms = terms;
                 case 3
-                    swappedTerms = swapTerms(terms, 3 );
+                    swappedTerms = swapTerms(terms, 3, swapSign );
                 case 4
-                    swappedTerms = swapTerms(terms, 2 );
+                    swappedTerms = swapTerms(terms, 2, swapSign );
                 otherwise
                     swappedTerms = terms;
             end
@@ -745,13 +758,13 @@ function [swappedTerms] = swapTermCodes(terms, termCodeOne, termCodeTwo )
         case 3
             switch termCodeTwo
                 case 1
-                    swappedTerms = swapTerms(terms, 2 );
+                    swappedTerms = swapTerms(terms, 2, swapSign );
                 case 2
-                    swappedTerms = swapTerms(terms, 3 );
+                    swappedTerms = swapTerms(terms, 3, swapSign );
                 case 3
                     swappedTerms = terms;
                 case 4
-                    swappedTerms = swapTerms(terms, 1 );
+                    swappedTerms = swapTerms(terms, 1, swapSign );
                 otherwise
                     swappedTerms = terms;
             end
@@ -759,11 +772,11 @@ function [swappedTerms] = swapTermCodes(terms, termCodeOne, termCodeTwo )
         case 4
             switch termCodeTwo
                 case 1
-                    swappedTerms = swapTerms(terms, 3 );
+                    swappedTerms = swapTerms(terms, 3, swapSign );
                 case 2
-                    swappedTerms = swapTerms(terms, 2 );
+                    swappedTerms = swapTerms(terms, 2, swapSign );
                 case 3
-                    swappedTerms = swapTerms(terms, 1 );
+                    swappedTerms = swapTerms(terms, 1, swapSign );
                 case 4
                     swappedTerms = terms;
                 otherwise
@@ -778,10 +791,6 @@ end
 %newCentreDistances, oldCentreDistances 
 %function [swappedTerms] = compareAndSwapTerms_3unique(oldTerms, new_solver_setup, old_solver_setup, oldMM, oldNN, mm, nn )
 function [swappedTerms] = compareAndSwapTerms_3unique(oldTerms,newCentreDistances, oldCentreDistances,mm, nn, oldMM, oldNN  )
-%     oldMPlus = old_solver_setup.rwg_basis_functions_trianglePlus(oldMM);
-%     oldMMinus = old_solver_setup.rwg_basis_functions_triangleMinus(oldMM);
-%     oldNPlus = old_solver_setup.rwg_basis_functions_trianglePlus(oldNN);
-%     oldNMinus = old_solver_setup.rwg_basis_functions_triangleMinus(oldNN);
     
     [~, ind] = sort(oldCentreDistances(oldMM,oldNN, :));
     %sorted from smallest to largest
@@ -801,25 +810,6 @@ function [swappedTerms] = compareAndSwapTerms_3unique(oldTerms,newCentreDistance
             return;
     end
     
-    %identify terms associated with middle triangle
-%     if (oldMPlus == oldNPlus)
-%         oldCode = 1;
-%     elseif (oldMPlus == oldNMinus)
-%         oldCode = 2;
-%     elseif (oldMMinus == oldNPlus)
-%         oldCode = 3;
-%     elseif (oldMMinus == oldNMinus)
-%         oldCode = 4;
-%     else
-%         swappedTerms = oldTerms;
-%         return;
-%     end
-    
-    %-----
-%     mPlus = new_solver_setup.rwg_basis_functions_trianglePlus(mm);
-%     mMinus = new_solver_setup.rwg_basis_functions_triangleMinus(mm);
-%     nPlus = new_solver_setup.rwg_basis_functions_trianglePlus(nn);
-%     nMinus = new_solver_setup.rwg_basis_functions_triangleMinus(nn);
     
     [~, ind] = sort(newCentreDistances(mm,nn, :));
     %identify terms associated with middle triangle
@@ -838,57 +828,63 @@ function [swappedTerms] = compareAndSwapTerms_3unique(oldTerms,newCentreDistance
             return;
     end
     
-%     if (mPlus == nPlus)
-%         newCode = 1;
-%     elseif (mPlus == nMinus)
-%         newCode = 2;
-%     elseif (mMinus == nPlus)
-%         newCode = 3;
-%     elseif (mMinus == nMinus)
-%         newCode = 4;
-%     else
-%         swappedTerms = oldTerms;
-%         return;
-%     end
-    
-    swappedTerms = swapTermCodes(oldTerms, oldCode, newCode );
+    %swappedTerms = swapTermCodes(oldTerms, oldCode, newCode );
+    %swappedTerms = swapTermCodes(oldTerms, oldCode, newCode, 0 );
+    swappedTerms = swapTermCodes(oldTerms, oldCode, newCode, 1 );
 end
 
-function [newTerms] = projectCentreDistances(oldTerms, newCentreDistances, oldCentreDistances )
+function [newTerms] = projectCentreDistances(oldTerms, newCentreDistances, oldCentreDistances, sameOrientation )
     
+    %if (sameOrientation) and swapSigns ==1 leads to 9 imag error, but 41
+%     %real error
+%     if (true)
+%     %if (~sameOrientation)
+%         [~, ind] = sort([oldCentreDistances(1,1,1),oldCentreDistances(1,1,2),oldCentreDistances(1,1,3),oldCentreDistances(1,1,4)]);
+%         %sorted from smallest to largest
+%         % min
+%         ind = ind(:);
+%         switch ind(1)
+%             case 1 % mmPlus_nnPlus
+%                 oldCode = 1;
+%             case 2  %mmPlus_nnMinus
+%                 oldCode = 2;
+%             case 3 % mmMinus_nnPlus
+%                 oldCode = 3;
+%             case 4 % mmMinus_nnMinus
+%                 oldCode = 4;
+%             otherwise
+%                 %swappedTerms = oldTerms;
+%                 return;
+%         end
+%         [~, ind] = sort([newCentreDistances(1,1,1),newCentreDistances(1,1,2),newCentreDistances(1,1,3),newCentreDistances(1,1,4)]);
+%         %identify terms associated with middle triangle
+%         ind = ind(:);
+%         switch ind(1)
+%             case 1 % mmPlus_nnPlus
+%                 newCode = 1;
+%             case 2  %mmPlus_nnMinus
+%                 newCode = 2;
+%             case 3 % mmMinus_nnPlus
+%                 newCode = 3;
+%             case 4 % mmMinus_nnMinus
+%                 newCode = 4;
+%             otherwise
+%                 %swappedTerms = oldTerms;
+%                 return;
+%         end
+%         %oldCentreDistances = swapCenterDistancesCodes(oldCentreDistances, oldCode, newCode );
+%         %oldTerms = swapTermCodes(oldTerms, oldCode, newCode, 1 );
+%         
+% %         if (~sameOrientation)
+% %             oldTerms = swapTermCodes(oldTerms, oldCode, newCode, 1 );
+% %         else
+% %             oldTerms = swapTermCodes(oldTerms, oldCode, newCode, 0 );
+% %         end
+%         %oldTerms = swapTermCodes(oldTerms, oldCode, newCode, 0 );
+%         
+%     end
+    %==================
     newTerms = zeros(1,1,8);
-
-%     mmPlusCentre = new_solver_setup.triangle_centre_point(new_solver_setup.rwg_basis_functions_trianglePlus(mm),:);
-%     mmMinusCentre = new_solver_setup.triangle_centre_point(new_solver_setup.rwg_basis_functions_triangleMinus(mm),:);
-%     nnPlusCentre =  new_solver_setup.triangle_centre_point(new_solver_setup.rwg_basis_functions_trianglePlus(nn),:);
-%     nnMinusCentre = new_solver_setup.triangle_centre_point(new_solver_setup.rwg_basis_functions_triangleMinus(nn),:);
-%     
-%     oldmmPlusCentre = old_solver_setup.triangle_centre_point(old_solver_setup.rwg_basis_functions_trianglePlus(oldMM),:);
-%     oldmmMinusCentre = old_solver_setup.triangle_centre_point(old_solver_setup.rwg_basis_functions_triangleMinus(oldMM),:);
-%     oldnnPlusCentre =  old_solver_setup.triangle_centre_point(old_solver_setup.rwg_basis_functions_trianglePlus(oldNN),:);
-%     oldnnMinusCentre = old_solver_setup.triangle_centre_point(old_solver_setup.rwg_basis_functions_triangleMinus(oldNN),:);
-%     
-%     mmPlus_nnPlus = norm(mmPlusCentre-nnPlusCentre);
-%     mmPlus_nnMinus = norm(mmPlusCentre-nnMinusCentre);
-%     mmMinus_nnPlus= norm(mmMinusCentre-nnPlusCentre);
-%     mmMinus_nnMinus = norm(mmMinusCentre-nnMinusCentre);
-%     
-%     oldmmPlus_nnPlus = norm(oldmmPlusCentre-oldnnPlusCentre);
-%     oldmmPlus_nnMinus = norm(oldmmPlusCentre-oldnnMinusCentre);
-%     oldmmMinus_nnPlus= norm(oldmmMinusCentre-oldnnPlusCentre);
-%     oldmmMinus_nnMinus = norm(oldmmMinusCentre-oldnnMinusCentre);
-    
-    % NB NB 1 INDICES DEPENDANT ON ORDER OF TERMS
-    % NB NB 2 Triangle plus/minus labels are already alligned
-%     newTerms(1) = oldmmPlus_nnPlus/mmPlus_nnPlus;
-%     newTerms(3) = oldmmPlus_nnMinus/mmPlus_nnMinus;
-%     newTerms(5) = oldmmMinus_nnPlus/mmMinus_nnPlus;
-%     newTerms(7) = oldmmMinus_nnMinus/mmMinus_nnMinus; 
-
-%     newTerms(1) = oldCentreDistances(oldMM,oldNN,1)/newCentreDistances(mm,nn,1);
-%     newTerms(3) = oldCentreDistances(oldMM,oldNN,2)/newCentreDistances(mm,nn,2);
-%     newTerms(5) = oldCentreDistances(oldMM,oldNN,3)/newCentreDistances(mm,nn,3);
-%     newTerms(7) = oldCentreDistances(oldMM,oldNN,4)/newCentreDistances(mm,nn,4);
     
     newTerms(1) = oldCentreDistances(1,1,1)/newCentreDistances(1,1,1);
     newTerms(3) = oldCentreDistances(1,1,2)/newCentreDistances(1,1,2);
@@ -898,17 +894,103 @@ function [newTerms] = projectCentreDistances(oldTerms, newCentreDistances, oldCe
     
     newTerms = oldTerms .* newTerms;
     
-%     [~, ind] = sort([mmPlus_nnPlus,mmPlus_nnMinus,mmMinus_nnPlus,mmMinus_nnMinus]);
-%     %sorted from smallest to largest
-%     % min
-%     switch ind(1)
-%         case 1 % mmPlus_nnPlus
-%         case 2  %mmPlus_nnMinus
-%              newTerms = swapTerms(newTerms, 1 );
-%         case 3 % mmMinus_nnPlus
-%             newTerms = swapTerms(newTerms, 2 );
-%         case 4 % mmMinus_nnMinus
-%             newTerms = swapTerms(newTerms, 3 );
-%     end
+    %===============
+    %newTerms = swapTermCodes(newTerms, oldCode, newCode, 1 );
+    [~, ind] = sort([newCentreDistances(1,1,1),newCentreDistances(1,1,2),newCentreDistances(1,1,3),newCentreDistances(1,1,4)]);
+    %sorted from smallest to largest
+    % min
+    switch ind(1)
+        case 1 % mmPlus_nnPlus
+        case 2  %mmPlus_nnMinus
+             newTerms = swapTerms(newTerms, 1, 0);
+        case 3 % mmMinus_nnPlus
+            newTerms = swapTerms(newTerms, 2, 0 );
+        case 4 % mmMinus_nnMinus
+            newTerms = swapTerms(newTerms, 3, 0 );
+    end
+    
+end
+
+function [swappedDistances] = swapCentreDistances(distances, swapCode )
+    
+    switch swapCode
+        case 1
+            swappedDistances(1,1,:) = distances(1,1,[2 1 4 3]);
+        case 2
+            swappedDistances(1,1,:) = distances(1,1,[3 4 1 2]);
+        case 3
+            swappedDistances(1,1,:) = distances(1,1,[4 3 2 1]);
+        otherwise
+            swappedDistances(1,1,:) = distances;    
+    end
+
+end
+
+function [swappedDistances] = swapCenterDistancesCodes(distances, distCodeOne, distCodeTwo )
+    %termCode:
+    % 1: mPlus_nPlus
+    % 2: mPlus_nMinus
+    % 3: mMinus_nPlus
+    % 4: mMinus_nMinus
+    
+    % termCodeOne = termCodeTwo will have no effect
+    switch distCodeOne
+        case 1
+            switch distCodeTwo
+                case 1
+                    swappedDistances = distances;
+                case 2
+                    swappedDistances = swapCentreDistances(distances, 1 );
+                case 3
+                    swappedDistances = swapCentreDistances(distances, 2 );
+                case 4
+                    swappedDistances = swapCentreDistances(distances, 3 );
+                otherwise
+                    swappedDistances = distances;
+            end
+        case 2
+            switch distCodeTwo
+                case 1
+                    swappedDistances = swapCentreDistances(distances, 1 );
+                case 2
+                    swappedDistances = distances;
+                case 3
+                    swappedDistances = swapCentreDistances(distances, 3 );
+                case 4
+                    swappedDistances = swapCentreDistances(distances, 2 );
+                otherwise
+                    swappedDistances = distances;
+            end
+            
+        case 3
+            switch distCodeTwo
+                case 1
+                    swappedDistances = swapCentreDistances(distances, 2 );
+                case 2
+                    swappedDistances = swapCentreDistances(distances, 3 );
+                case 3
+                    swappedDistances = distances;
+                case 4
+                    swappedDistances = swapCentreDistances(distances, 1 );
+                otherwise
+                    swappedDistances = distances;
+            end
+            
+        case 4
+            switch distCodeTwo
+                case 1
+                    swappedDistances = swapCentreDistances(distances, 3 );
+                case 2
+                    swappedDistances = swapCentreDistances(distances, 2 );
+                case 3
+                    swappedDistances = swapCentreDistances(distances, 1 );
+                case 4
+                    swappedDistances = distances;
+                otherwise
+                    swappedDistances = distances;
+            end
+        otherwise 
+            swappedDistances = distances;
+    end
     
 end

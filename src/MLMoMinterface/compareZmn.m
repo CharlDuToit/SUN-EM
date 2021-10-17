@@ -1,4 +1,5 @@
-function [comp] = compareZmn(refZmn, predZmn, unityZmn, singInd, freqIndex, useReal)
+%function [comp] = compareZmn(refZmn, predZmn, unityZmn, singInd, freqIndex, useReal)
+function [comp] = compareZmn(refZmn, predZmn, unityZmn, singInd)
    %Matrices are all [num_edges, num_edges, 1] ie only 1 frequency
    comp = [];
    [numEdges, ~]  = size(refZmn);
@@ -16,56 +17,52 @@ function [comp] = compareZmn(refZmn, predZmn, unityZmn, singInd, freqIndex, useR
    
    predSquaredSum = 0;
    unitySquaredSum = 0;
-   
-   if (useReal)
-       refZmn = real(refZmn(:,:,freqIndex));
-       predZmn = real(predZmn(:,:,freqIndex));
-       unityZmn = real(unityZmn(:,:,freqIndex));
-   else
-       refZmn = imag(refZmn(:,:,freqIndex));
-       predZmn = imag(predZmn(:,:,freqIndex));
-       unityZmn = imag(unityZmn(:,:,freqIndex));
-   end
-   
+
    for mm = 1:numEdges
        for nn = 1:numEdges
-           predSquaredSum = predSquaredSum + predZmn(mm,nn).^2;
-           unitySquaredSum = unitySquaredSum + unityZmn(mm,nn).^2;
+           predSquaredSum = predSquaredSum + abs(predZmn(mm,nn)).^2;
+           unitySquaredSum = unitySquaredSum + abs(unityZmn(mm,nn)).^2;
            if (mm == nn)
                
-               predSelfDiff = predZmn(mm,nn) - refZmn(mm,nn);
+               predSelfDiff = abs(predZmn(mm,nn) - refZmn(mm,nn));
                predSelfSquaredDiffSum = predSelfSquaredDiffSum + predSelfDiff.^2 ;
    
                %predSelfRelNormPercentError = predSelfDiff.^2 / refSelfZmn.^2;
                %predSelfMSE = predSelfDiff'*predSelfDiff /numSelf;
                
-               unitySelfDiff =  unityZmn(mm,nn)  - refZmn(mm,nn);
+               unitySelfDiff =  abs(unityZmn(mm,nn)  - refZmn(mm,nn));
                unitySelfSquaredDiffSum = unitySelfSquaredDiffSum + unitySelfDiff.^2;
                
-               refSelfSquaredSum = refSelfSquaredSum + refZmn(mm,nn).^2;
+               refSelfSquaredSum = refSelfSquaredSum + abs(refZmn(mm,nn)).^2;
                %unitySelfMSE = unitySelfDiff'*unitySelfDiff ./numSelf;
            elseif (singInd(mm,nn))
                triCount = triCount + 1;
-               predTriDiff = predZmn(mm,nn) - refZmn(mm,nn);
+               predTriDiff = abs(predZmn(mm,nn) - refZmn(mm,nn));
                predTriSquaredDiffSum = predTriSquaredDiffSum + predTriDiff.^2 ;
                
-               unityTriDiff =  unityZmn(mm,nn)  - refZmn(mm,nn);
+               unityTriDiff =  abs(unityZmn(mm,nn)  - refZmn(mm,nn));
                unityTriSquaredDiffSum = unityTriSquaredDiffSum + unityTriDiff.^2;
                
-               refTriSquaredSum = refTriSquaredSum + refZmn(mm,nn).^2;
+               refTriSquaredSum = refTriSquaredSum + abs(refZmn(mm,nn)).^2;
                
            else
                nonSingCount = nonSingCount + 1;
-               predNonSingDiff = predZmn(mm,nn) - refZmn(mm,nn);
+               predNonSingDiff = abs(predZmn(mm,nn) - refZmn(mm,nn));
                predNonSingSquaredDiffSum = predNonSingSquaredDiffSum + predNonSingDiff.^2 ;
                
-               unityNonSingDiff =  unityZmn(mm,nn)  - refZmn(mm,nn);
+               unityNonSingDiff =  abs(unityZmn(mm,nn)  - refZmn(mm,nn));
                unityNonSingSquaredDiffSum = unityNonSingSquaredDiffSum + unityNonSingDiff.^2;
                
-                refNonSingSquaredSum = refNonSingSquaredSum + refZmn(mm,nn).^2;
+                refNonSingSquaredSum = refNonSingSquaredSum + abs(refZmn(mm,nn)).^2;
            end
        end % for nn
    end % for mm
+   
+   predRowRelNormPercentError = zeros(numEdges,1);
+   for mm = 1:numEdges
+       [~, predRowRelNormPercentError(mm)] = calcError(refZmn(mm,:), predZmn(mm,:));
+   end
+         
    comp.predNonSingRelNormPercentError = 100 * sqrt(predNonSingSquaredDiffSum / refNonSingSquaredSum);
    comp.unityNonSingRelNormPercentError = 100 * sqrt(unityNonSingSquaredDiffSum / refNonSingSquaredSum);
    comp.predNonSingMSE = predNonSingSquaredDiffSum/nonSingCount;
@@ -84,4 +81,10 @@ function [comp] = compareZmn(refZmn, predZmn, unityZmn, singInd, freqIndex, useR
    comp.refFrobNorm = sqrt(refNonSingSquaredSum + refTriSquaredSum + refSelfSquaredSum);
    comp.predFrobNorm = sqrt(predSquaredSum);
    comp.unityFrobNorm = sqrt(unitySquaredSum);
+   
+   [~, comp.predRelNormPercentError] = calcError(refZmn, predZmn);
+    comp.predRowRelNormPercentError = predRowRelNormPercentError;
+    
+   [~, comp.unityRelNormPercentError] = calcError(refZmn, unityZmn);
+   
 end

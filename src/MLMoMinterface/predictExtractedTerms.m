@@ -8,9 +8,9 @@ function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZm
     maxClusterError = mlmom.maxClusterError;
     
     clusterMeans = mlmom.clusterMeans ;
-    propScale = mlmom.propScale ;
     %clusterMeans = clusterMeans .* propScale;
     numFreq = mlmom.numFreq;
+    %errorCode = 1;
 
     [numWeights,~]= size(mlmom.weightModels{1, 2}.selfWeights);
     [ ~, numTerms ] = size(selfZmnTerms);
@@ -21,8 +21,6 @@ function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZm
     unityZmn = [];
     if (returnUnity)
         unityZmn = complex(zeros(numEdges,numEdges,numFreq));
-    %else
-       % unityZmn = zeros(numEdges,numEdges,numFreq);
     end
     
     predZmn = complex(zeros(numEdges,numEdges,numFreq));
@@ -52,6 +50,7 @@ function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZm
         
         for mm = 1:numEdges
             for nn = 1:numEdges
+                %=========2 Unique ============
                 if (mm == nn)
                     if (returnUnity)
                         unityZmn(mm,nn,freq) = sum(selfZmnTerms(mm, 1:numTerms, freq)) ;
@@ -66,7 +65,7 @@ function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZm
                         predZmn(mm,nn,freq) = real(selfZmnTerms(mm, :, freq)) *weightModels{freq,1}.selfWeights;
                     end
                     predZmn(mm,nn,freq) = predZmn(mm,nn,freq) + 1i * imag(selfZmnTerms(mm, :, freq)) *weightModels{freq,2}.selfWeights;
-                    
+                %=========3 Unique ============    
                 elseif (singInd(mm,nn))
                     triCount = triCount + 1;
                     if (returnUnity)
@@ -83,14 +82,14 @@ function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZm
                         predZmn(mm,nn,freq) = real(triZmnTerms(triCount, :, freq)) *weightModels{freq,1}.triWeights;
                     end
                     predZmn(mm,nn,freq) = predZmn(mm,nn,freq) + 1i * imag(triZmnTerms(triCount, :, freq)) *weightModels{freq,2}.triWeights;
-                    
+                %=========4 Unique ============   
                 else
                     nonSingCount = nonSingCount + 1;
                     if (returnUnity)
                         unityZmn(mm,nn,freq) = sum(nonSingZmnTerms(nonSingCount, 1:numTerms, freq)) ;
                     end
                     prop = nonSingZmnProp(nonSingCount,:);                  
-                    [err, ind] = calcMinClusterError(clusterMeans(imagWeightsInd,:), prop, propScale, errorCode);
+                    [err, ind] = calcMinClusterError(clusterMeans(imagWeightsInd,:), prop, errorCode);
                     
                     %if (maxClusterError(ind) < err)
                     clusterIndex = imagWeightsInd(ind);
@@ -132,7 +131,7 @@ function [predZmn, unityZmn] = predictExtractedTerms( mlmom, selfZmnTerms, triZm
                                     predZmn(mm,nn,freq) = sum(regressedTerms,2);
                                 end
                                 
-                            else
+                            else %if (numel(realIndex) > 0)
                                 if (returnUnity)
                                     predZmn(mm,nn,freq) = real(unityZmn(mm,nn,freq));
                                 else

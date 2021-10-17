@@ -96,5 +96,8 @@ function [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(properti
    
     end%for c = 1:maxNumClusters
     clusterMeans = clusterMeans(1:totalClusters, :);
+    if (totalClusters == 0)
+        clusterMeans(1,:) = sum(properties,1)/N;
+    end
 
 end

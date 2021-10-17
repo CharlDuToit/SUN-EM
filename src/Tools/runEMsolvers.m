@@ -41,7 +41,7 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
     
     % -- ML-MoM Add Triangles   
     if (Const.runMLMoMAddTrianglessolver)        
-        Solution.mlmomAddTriangles = runMLMoMAddTrianglesSolver(Const, Solver_setup, zMatrices);
+        Solution.mlmomAddTriangles = runMLMoMAddTrianglesSolver(Const, Solver_setup);
     end%if
 
     % -- C++ MoM (TO-DO: Tameez, perhaps this is a better spot to call your entire MoM C++ solver)
