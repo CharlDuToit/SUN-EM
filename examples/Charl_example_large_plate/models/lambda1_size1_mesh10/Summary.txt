@@ -1,0 +1,9 @@
+plate
+lambda1_size1_mesh10
+
+edges 343
+triangles 242
+minLength 0.069
+maxLength 0.1457700
+
+

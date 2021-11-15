@@ -16,7 +16,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.twoUnique_int_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.twoUnique_int_means = clusterMeans;
     groupMeans.twoUnique_int_properties = prop;
     groupMeans.twoUnique_int_errorCode = errorCode;
@@ -24,43 +24,41 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
 %     groupMeans.twoUnique_int_numNoClass = numNoClass;
     groupMeans.twoUnique_int_counts = 0;
     
+    %-------------------
+    twoUnique_notInt_ErrorCode = 5;
     %-----twoUnique_pos
-    errorCode = 9;
     minSizeTwoUniqueNegOrPosOrExt = 4;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.twoUnique_pos_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, twoUnique_notInt_ErrorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSizeTwoUniqueNegOrPosOrExt);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSizeTwoUniqueNegOrPosOrExt);
     groupMeans.twoUnique_pos_means = clusterMeans;
     groupMeans.twoUnique_pos_properties = prop;
-    groupMeans.twoUnique_pos_errorCode = errorCode;
+    groupMeans.twoUnique_pos_errorCode = twoUnique_notInt_ErrorCode;
 %     groupMeans.twoUnique_pos_numClass = numClass;
 %     groupMeans.twoUnique_pos_numNoClass = numNoClass;
     groupMeans.twoUnique_pos_counts = 0;
     
     %-----twoUnique_neg
-    errorCode = 9;
-    
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.twoUnique_neg_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, twoUnique_notInt_ErrorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSizeTwoUniqueNegOrPosOrExt);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSizeTwoUniqueNegOrPosOrExt);
     groupMeans.twoUnique_neg_means = clusterMeans;
     groupMeans.twoUnique_neg_properties = prop;
-    groupMeans.twoUnique_neg_errorCode = errorCode;
+    groupMeans.twoUnique_neg_errorCode = twoUnique_notInt_ErrorCode;
 %     groupMeans.twoUnique_neg_numClass = numClass;
 %     groupMeans.twoUnique_neg_numNoClass = numNoClass;
     groupMeans.twoUnique_neg_counts = 0;
     
     %-----twoUnique_ext
-    errorCode = 9;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.twoUnique_ext_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, twoUnique_notInt_ErrorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSizeTwoUniqueNegOrPosOrExt);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSizeTwoUniqueNegOrPosOrExt);
     groupMeans.twoUnique_ext_means = clusterMeans;
     groupMeans.twoUnique_ext_properties = prop;
-    groupMeans.twoUnique_ext_errorCode = errorCode;
+    groupMeans.twoUnique_ext_errorCode = twoUnique_notInt_ErrorCode;
 %     groupMeans.twoUnique_ext_numClass = numClass;
 %     groupMeans.twoUnique_ext_numNoClass = numNoClass;
     groupMeans.twoUnique_ext_counts = 0;
@@ -77,7 +75,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.threeUnique_intInt_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSizeTwoUniqueNegOrPosOrExt);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSizeTwoUniqueNegOrPosOrExt);
     groupMeans.threeUnique_intInt_means = clusterMeans;
     groupMeans.threeUnique_intInt_properties = prop;
     groupMeans.threeUnique_intInt_errorCode = errorCode;
@@ -90,7 +88,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.threeUnique_intPos_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.threeUnique_intPos_means = clusterMeans;
     groupMeans.threeUnique_intPos_properties = prop;
     groupMeans.threeUnique_intPos_errorCode = errorCode;
@@ -103,7 +101,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.threeUnique_intNeg_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
    % clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.threeUnique_intNeg_means = clusterMeans;
     groupMeans.threeUnique_intNeg_properties = prop;
     groupMeans.threeUnique_intNeg_errorCode = errorCode;
@@ -116,7 +114,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.threeUnique_posInt_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.threeUnique_posInt_means = clusterMeans;
     groupMeans.threeUnique_posInt_properties = prop;
     groupMeans.threeUnique_posInt_errorCode = errorCode;
@@ -129,7 +127,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.threeUnique_negInt_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.threeUnique_negInt_means = clusterMeans;
     groupMeans.threeUnique_negInt_properties = prop;
     groupMeans.threeUnique_negInt_errorCode = errorCode;
@@ -142,7 +140,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.threeUnique_extNotExt_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.threeUnique_extNotExt_means = clusterMeans;
     groupMeans.threeUnique_extNotExt_properties = prop;
     groupMeans.threeUnique_extNotExt_errorCode = errorCode;
@@ -155,7 +153,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.threeUnique_notExtExt_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.threeUnique_notExtExt_means = clusterMeans;
     groupMeans.threeUnique_notExtExt_properties = prop;
     groupMeans.threeUnique_notExtExt_errorCode = errorCode;
@@ -168,7 +166,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.threeUnique_parIntParInt_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.threeUnique_parIntParInt_means = clusterMeans;
     groupMeans.threeUnique_parIntParInt_properties = prop;
     groupMeans.threeUnique_parIntParInt_errorCode = errorCode;
@@ -182,7 +180,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
         [prop, clusterIntervals] =createPropAndIntervals(groupIndices.threeUnique_extExt_indices, newLinkOld,...
             newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
         %clusterIntervals = createIntervals(prop, clusterSizes);
-        [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+        [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     else
         clusterMeans = [];
         prop = [];
@@ -198,124 +196,112 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     groupMeans.threeUnique_extExt_counts = 0;
     
     %------------4 unique--------------
-    %clusterIntervals = cell(3,1);
-    %numDistIntervals = 2;
-    %numOrientationIntervals = 1;
-    %numRadialIntervals = 1;
+    fourUniqueShareOrientErrorCode = 10; % 2 has worse error for 343 edges
     
     %-----fourUnique_intInt
-    errorCode = 2;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_intInt_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, fourUniqueShareOrientErrorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_intInt_means = clusterMeans;
     groupMeans.fourUnique_intInt_properties = prop;
-    groupMeans.fourUnique_intInt_errorCode = errorCode;
+    groupMeans.fourUnique_intInt_errorCode = fourUniqueShareOrientErrorCode;
 %     groupMeans.fourUnique_intInt_numClass = numClass;
 %     groupMeans.fourUnique_intInt_numNoClass = numNoClass;
     groupMeans.fourUnique_intInt_counts = 0;
     
     %-----fourUnique_intPos
-    errorCode = 2;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_intPos_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, fourUniqueShareOrientErrorCode);
    % clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_intPos_means = clusterMeans;
     groupMeans.fourUnique_intPos_properties = prop;
-    groupMeans.fourUnique_intPos_errorCode = errorCode;
+    groupMeans.fourUnique_intPos_errorCode = fourUniqueShareOrientErrorCode;
 %     groupMeans.fourUnique_intPos_numClass = numClass;
 %     groupMeans.fourUnique_intPos_numNoClass = numNoClass;
     groupMeans.fourUnique_intPos_counts = 0;
     
     %-----fourUnique_intNeg
-    errorCode = 2;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_intNeg_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, fourUniqueShareOrientErrorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_intNeg_means = clusterMeans;
     groupMeans.fourUnique_intNeg_properties = prop;
-    groupMeans.fourUnique_intNeg_errorCode = errorCode;
+    groupMeans.fourUnique_intNeg_errorCode = fourUniqueShareOrientErrorCode;
 %     groupMeans.fourUnique_intNeg_numClass = numClass;
 %     groupMeans.fourUnique_intNeg_numNoClass = numNoClass;
     groupMeans.fourUnique_intNeg_counts = 0;
     
     %-----fourUnique_posInt
-    errorCode = 2;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_posInt_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, fourUniqueShareOrientErrorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_posInt_means = clusterMeans;
     groupMeans.fourUnique_posInt_properties = prop;
-    groupMeans.fourUnique_posInt_errorCode = errorCode;
+    groupMeans.fourUnique_posInt_errorCode = fourUniqueShareOrientErrorCode;
 %     groupMeans.fourUnique_posInt_numClass = numClass;
 %     groupMeans.fourUnique_posInt_numNoClass = numNoClass;
     groupMeans.fourUnique_posInt_counts = 0;
     
     %-----fourUnique_negInt
-    errorCode = 2;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_negInt_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, fourUniqueShareOrientErrorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_negInt_means = clusterMeans;
     groupMeans.fourUnique_negInt_properties = prop;
-    groupMeans.fourUnique_negInt_errorCode = errorCode;
+    groupMeans.fourUnique_negInt_errorCode = fourUniqueShareOrientErrorCode;
 %     groupMeans.fourUnique_negInt_numClass = numClass;
 %     groupMeans.fourUnique_negInt_numNoClass = numNoClass;
     groupMeans.fourUnique_negInt_counts = 0;
     
     %-----fourUnique_posPos
-    errorCode = 2;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_posPos_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, fourUniqueShareOrientErrorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_posPos_means = clusterMeans;
     groupMeans.fourUnique_posPos_properties = prop;
-    groupMeans.fourUnique_posPos_errorCode = errorCode;
+    groupMeans.fourUnique_posPos_errorCode = fourUniqueShareOrientErrorCode;
 %     groupMeans.fourUnique_posPos_numClass = numClass;
 %     groupMeans.fourUnique_posPos_numNoClass = numNoClass;
     groupMeans.fourUnique_posPos_counts = 0;
     
     %-----fourUnique_posNeg
-    errorCode = 2;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_posNeg_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, fourUniqueShareOrientErrorCode);
 %    clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_posNeg_means = clusterMeans;
     groupMeans.fourUnique_posNeg_properties = prop;
-    groupMeans.fourUnique_posNeg_errorCode = errorCode;
+    groupMeans.fourUnique_posNeg_errorCode = fourUniqueShareOrientErrorCode;
 %     groupMeans.fourUnique_posNeg_numClass = numClass;
 %     groupMeans.fourUnique_posNeg_numNoClass = numNoClass;
     groupMeans.fourUnique_posNeg_counts = 0;
     
     %-----fourUnique_negPos
-    errorCode = 2;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_negPos_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, fourUniqueShareOrientErrorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_negPos_means = clusterMeans;
     groupMeans.fourUnique_negPos_properties = prop;
-    groupMeans.fourUnique_negPos_errorCode = errorCode;
+    groupMeans.fourUnique_negPos_errorCode = fourUniqueShareOrientErrorCode;
 %     groupMeans.fourUnique_negPos_numClass = numClass;
 %     groupMeans.fourUnique_negPos_numNoClass = numNoClass;
     groupMeans.fourUnique_negPos_counts = 0;
     
     %-----fourUnique_negNeg
-    errorCode = 2;
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_negNeg_indices, newLinkOld,...
-        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
+        newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, fourUniqueShareOrientErrorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_negNeg_means = clusterMeans;
     groupMeans.fourUnique_negNeg_properties = prop;
-    groupMeans.fourUnique_negNeg_errorCode = errorCode;
+    groupMeans.fourUnique_negNeg_errorCode = fourUniqueShareOrientErrorCode;
 %     groupMeans.fourUnique_negNeg_numClass = numClass;
 %     groupMeans.fourUnique_negNeg_numNoClass = numNoClass;
     groupMeans.fourUnique_negNeg_counts = 0;
@@ -325,7 +311,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_notExtNotExt_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_notExtNotExt_means = clusterMeans;
     groupMeans.fourUnique_notExtNotExt_properties = prop;
     groupMeans.fourUnique_notExtNotExt_errorCode = errorCode;
@@ -338,7 +324,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_notExtExt_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_notExtExt_means = clusterMeans;
     groupMeans.fourUnique_notExtExt_properties = prop;
     groupMeans.fourUnique_notExtExt_errorCode = errorCode;
@@ -351,7 +337,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_extNotExt_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_extNotExt_means = clusterMeans;
     groupMeans.fourUnique_extNotExt_properties = prop;
     groupMeans.fourUnique_extNotExt_errorCode = errorCode;
@@ -364,7 +350,7 @@ function groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, ol
     [prop, clusterIntervals] =createPropAndIntervals(groupIndices.fourUnique_extExt_indices, newLinkOld,...
         newProperties, oldProperties, newEdgeLengths, oldEdgeLengths,newRhoProperties,oldRhoProperties,avgSize, errorCode);
     %clusterIntervals = createIntervals(prop, clusterSizes);
-    [clusterMeans, numClass, numNoClass] = initClusterMeansDynamic(prop,clusterIntervals,  minSize);
+    [clusterMeans, numClass, numNoClass] = initClusterMeans(prop,clusterIntervals,  minSize);
     groupMeans.fourUnique_extExt_means = clusterMeans;
     groupMeans.fourUnique_extExt_properties = prop;
     groupMeans.fourUnique_extExt_errorCode = errorCode;
@@ -406,18 +392,20 @@ function [prop, clusterIntervals] = createPropAndIntervals(indices, newLinkOld, 
             for k = 1:numel(mmInd)
                 prop(k,:) = newProperties(mmInd(k), nnInd(k), :);
             end
-        case 2 %4 properties, new dist, new radial, old dist, old radial
+        case 2  %5 properties, new dist, new orientation, new radial, old dist, old radial l
             %fourUnique_posInt, intInt
-            prop = zeros(numel(mmInd), 4);
-            numClusters = 2*numel(mmInd)./avgSize; % 2
-            s = ceil(sqrt(numClusters));
-            sizes = [s 1 s 1];
+            prop = zeros(numel(mmInd), 5);
+            numClusters = 3*numel(mmInd)./avgSize; % 2
+            s = ceil(numClusters.^0.5);
+            sizes = ceil([s 1 1 0.8*s 1]); %6 0.8
+            %s = ceil(numClusters.^0.333);
+            %sizes = ceil([s s 1 0.8*s 1]);
             for k = 1:numel(mmInd)
-                prop(k,1:2) = newProperties(mmInd(k), nnInd(k), [1 3]);
-                prop(k,3:4) = oldProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), [1 3]);
+                prop(k,1:3) = newProperties(mmInd(k), nnInd(k), [1 2 3]);
+                prop(k,4:5) = oldProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), [1 3]);
             end
             threshDist = [newThreshDist, oldThreshDist];
-            threshPropInd = [1 3];
+            threshPropInd = [1 4];
         case 3 %3 properties new dist, new radial, old radial
             %threeUnique posInt, intInt
             prop = zeros(numel(mmInd), 3);
@@ -447,6 +435,7 @@ function [prop, clusterIntervals] = createPropAndIntervals(indices, newLinkOld, 
             %numClusters = numel(mmInd)./avgSize;
             numClusters = numel(mmInd)./sqrt(avgSize);
             sizes = ceil(numClusters);
+            sizes = 1;
             prop = newEdgeLengths(mmInd);
         case 6 %4 properties, new dist, new radial, old dist, old radial
             %threeUnique_parIntParInt, extNotExt, extExt
@@ -495,8 +484,19 @@ function [prop, clusterIntervals] = createPropAndIntervals(indices, newLinkOld, 
                 prop(k,4) = oldRhoProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), 1);
                 prop(k,5) = oldRhoProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), 2);
             end
-         %case 10 
-             %twoUnique ext
+        case 10  
+            %4 properties, new dist, new radial, old dist, old radial
+            %fourUnique_posInt, intInt
+            prop = zeros(numel(mmInd), 4);
+            numClusters = 3*numel(mmInd)./avgSize; % 2, 3
+            s = ceil(sqrt(numClusters));
+            sizes = ceil([s 1 0.8*s 1]); % 1, 0.8
+            for k = 1:numel(mmInd)
+                prop(k,1:2) = newProperties(mmInd(k), nnInd(k), [1 3]);
+                prop(k,3:4) = oldProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), [1 3]);
+            end
+            threshDist = [newThreshDist, oldThreshDist];
+            threshPropInd = [1 3];
 
     end % switch
     clusterIntervals = createIntervals(prop, sizes, threshDist, threshPropInd);

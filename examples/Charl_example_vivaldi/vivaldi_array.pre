@@ -9,9 +9,8 @@
 IN   8 1055  "vivaldi_array.cfm"
 
 ** Finite antenna array
-FA: 0 : 2 : 2 :  :  :  :  :  :  :  : 0
+FA: 0 : 2 : 1 :  :  :  :  :  :  :  : 0
   :  :  :  :  :  : 0 : 0 : 0 :  :  : 0 : 0 : 0
-  :  :  :  :  :  : 0.22 : 0 : 0 :  :  : 0 : 0 : 0
 
 
 ** Feko solution parameters
@@ -39,7 +38,7 @@ AE: 0 : el.Face8_1 : el.Face8_2 : 0 : 1 : 1 : 0 : 50   ** VoltageSource1
 
 
 ** Set frequency
-FR:  :  :  :  :  : 299792458.000176
+FR: 3 : 0 :  :  :  : 1000001527.72648 :  : 3000004583.17943
 
 NC: StandardConfiguration1
 DA:  :  :  :  : 0
@@ -66,4 +65,4 @@ FF: 1 : 361 : 1 : 0 : 0 : -180 : 90 : 1 : 0 :  :  : 0   ** Hplane
 ** End of file
 EN
 
-** CADFEKO Checksum: 2788acb53f18966913e27d2c39ccf38a
+** CADFEKO Checksum: 756d59524037379c1256eff98524b67c

@@ -27,7 +27,7 @@ PW: 0
 
 ** Sources
 
-A0: 0 :  : 1 : 1 : 1 : 4 : 46 : 60 : 60 : 0 : 0 : 0 : 0   ** PlaneWaveSource1
+A0: 0 :  : 1 : 1 : 1 : 1 : 0 : 0 : 0 : 0 : 0 : 0 : 0   ** PlaneWaveSource1
   : 0 :  :  :  :  :  :  : 0 : 0 : 0 : 0 : 0 : 0
 
 
@@ -50,4 +50,4 @@ OS: 1 :  : 1   ** Currents1
 ** End of file
 EN
 
-** CADFEKO Checksum: cb66ad1ca6662e6e120394a85154c544
+** CADFEKO Checksum: 594c9905cdb73eae14fbddfa48cc5d19

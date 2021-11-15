@@ -1,0 +1,6 @@
+max = 0.01547
+min = 0.004
+max/min = 3.85
+1.08log2(max/min) = 2.1
+
+maxDist = 0.485

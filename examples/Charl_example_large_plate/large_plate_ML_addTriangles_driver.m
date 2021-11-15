@@ -1,5 +1,5 @@
 %clear;
-%Const = sunem_initialise('square_plate',false);
+Const = sunem_initialise('square_plate',false);
 Const.FEKOmatfilename          = 'square_plate.mat'; 
 Const.FEKOstrfilename          = 'square_plate.str';
 Const.FEKOrhsfilename          = 'square_plate.rhs'; % ?
@@ -8,17 +8,17 @@ Const.FEKOefefilename          = 'square_plate.efe'; % ?
 Const.FEKOffefilename          = 'square_plate.ffe'; % ?
 
 
-%[Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const);
-%[Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
+[Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const);
+[Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
 Const.QUAD_PTS = 12;
 %Const.runMLMoMsolver              = true;
 Const.runMLMoMAddTrianglessolver = true;
 Const.MLMoMClusterSizeScale = 1;
 Const.MLMoMMinPercentImprov = 2;
 Const.MLMoMIncludeRealCalc = 0;
-%[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
+[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
 % 
-%mlmomAddTriangles = Solution.mlmomAddTriangles;
+mlmomAddTriangles = Solution.mlmomAddTriangles;
 
 %plot(Solver_setup.nodes_xyz(:,1), Solver_setup.nodes_xyz(:,2), '.', 'markerSize', 20);
 
@@ -45,9 +45,9 @@ Const.MLMoMIncludeRealCalc = 0;
 %threeQuadZMatricesCalcTime = toc;
 %unity = threeQuadZMatrices.values
 %pred = mlmomAddTriangles.predZmn
-[comp_real] = compareZmn(real(predictedSetup_plate.refZmn), real(predictedSetup_plate.predZmn), real(threeQuadZMatrices.values), predictedSetup_plate.newSingInd);
-[comp_imag] = compareZmn(imag(predictedSetup_plate.refZmn), imag(predictedSetup_plate.predZmn), imag(threeQuadZMatrices.values), predictedSetup_plate.newSingInd);
-[comp_complex] = compareZmn(predictedSetup_plate.refZmn, predictedSetup_plate.predZmn, threeQuadZMatrices.values, predictedSetup_plate.newSingInd);
+%[comp_real] = compareZmn(real(predictedSetup_plate.refZmn), real(predictedSetup_plate.predZmn), real(threeQuadZMatrices.values), predictedSetup_plate.newSingInd);
+%[comp_imag] = compareZmn(imag(predictedSetup_plate.refZmn), imag(predictedSetup_plate.predZmn), imag(threeQuadZMatrices.values), predictedSetup_plate.newSingInd);
+%[comp_complex] = compareZmn(predictedSetup_plate.refZmn, predictedSetup_plate.predZmn, threeQuadZMatrices.values, predictedSetup_plate.newSingInd);
 %===========
 
 

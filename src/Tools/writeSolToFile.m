@@ -65,6 +65,10 @@ function writeSolToFile(Const, solStruct)
     switch (upper(solStruct.name))
         case 'MOM'
             filename = Const.SUNEMmomstrfilename;
+        case 'MLMOM'
+            filename = Const.SUNEMmlmomstrfilename;
+        case 'MLMOM-ADDTRIANGLES'
+            filename = Const.SUNEMmlmomaddtrianglesstrfilename;
         case 'CBFM'
             filename = Const.SUNEMcbfmstrfilename;
         case 'DGFM'

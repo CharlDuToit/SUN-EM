@@ -335,6 +335,34 @@ function Const = sunem_init(Const, yVectors)
     % ================================    
     try
         set = false;
+        if (Const.SUNEMmlmomstrfilename)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.SUNEMmlmomstrfilename = '';
+        end
+    end
+    
+        % ================================    
+    try
+        set = false;
+        if (Const.SUNEMmlmomaddtrianglesstrfilename)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.SUNEMmlmomaddtrianglesstrfilename = '';
+        end
+    end
+    
+   % ================================    
+    try
+        set = false;
         if (Const.SUNEMmomstrfilename)
             % It is set in the driver
             set = true;
@@ -343,6 +371,20 @@ function Const = sunem_init(Const, yVectors)
         if (~set)
             % Solver not activated
            Const.SUNEMmomstrfilename = '';
+        end
+    end
+    
+    % ================================    
+    try
+        set = false;
+        if (Const.SUNEMmlmomaddtrianglesstrfilename)
+            % It is set in the driver
+            set = true;
+        end
+    catch
+        if (~set)
+            % Solver not activated
+           Const.SUNEMmlmomaddtrianglesstrfilename = '';
         end
     end
 

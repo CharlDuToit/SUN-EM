@@ -6,7 +6,7 @@
 ** --- End CADFEKO checksum ignore
 
 ** Import mesh model
-IN   8 1055  "square_plate.cfm"
+IN   8 1055  "custom.cfm"
 
 
 ** Feko solution parameters
@@ -16,9 +16,8 @@ FP: 0 : 0
 EG: 0 : 0 : 0 :  :  : 1e-06 :  :  :  :  :  :  : 1
 
 ** Solution control
-PS: 0 : 3 : 3 : 1 :  : 1
+PS: 0 : 1 : 1 : 1 :  : 1
 CG: -1 :  : -1
-PS: 0 : 3 : 0 : 1 : 0 : 1
 
 ** Set medium properties, coatings and skin effects
 DI: 0 :  : -1 :  :  : 1 :  :  :  : 0 : 1000
@@ -36,7 +35,7 @@ A0: 0 :  : 1 : 1 : 1 : 1 : 0 : 0 : 0 : 0 : 0 : 0 : 0   ** PlaneWaveSource1
 
 
 ** Set frequency
-FR:  :  :  :  :  : 299792458.000176
+FR: 2 : 0 :  :  :  : 299792458.000176 :  : 449688687.000264
 
 NC: StandardConfiguration1
 DA:  :  :  :  : 0
@@ -51,4 +50,4 @@ OS: 1 :  : 1   ** Currents1
 ** End of file
 EN
 
-** CADFEKO Checksum: 09a9146eacf10cbbf4f638f2139166e3
+** CADFEKO Checksum: 435ffa050a0ad291658562c1ba96fcfd

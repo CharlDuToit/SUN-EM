@@ -1,4 +1,4 @@
-% Author: Danie Ludick (dludick@sun.ac.za)
+la% Author: Danie Ludick (dludick@sun.ac.za)
 % Project: Square plate
 %
 % Note: Each project directory / example directory needs to have a sunem_initialise.m
@@ -18,7 +18,7 @@ Const = sunem_initialise('square_plate',false);
 % --------------------------------------------------------------------------------------------------
 
 % Choose the solvers that will be executed
-Const.runMoMsolver              = true;
+%Const.runMoMsolver              = true;
 
 % --------------------------------------------------------------------------------------------------
 % Define input files for extracting FEKO data
@@ -63,21 +63,21 @@ Const.FEKOffefilename          = 'square_plate.ffe'; % ?
 % Postprocess the results, e.g. calculate the Electric field
 % --------------------------------------------------------------------------------------------------
 
-figure;
-hold on;
-grid on;
-samples = [xVectors.Isol(32);xVectors.Isol(39);xVectors.Isol(35);xVectors.Isol(3);
-    xVectors.Isol(109);xVectors.Isol(88);xVectors.Isol(96);xVectors.Isol(80)];
-samples  = abs(samples);
-num_samples = 8;
-x_val = [1; 2;3;4;5;6;7;8];
-x_val = x_val - 0.5;
-x_val = x_val/53.33;
-%plot(1:num_samples,samples,'LineWidth',3);
-plot(x_val,samples,'LineWidth',3);
-%legend('SUN-EM','FEKO (*.efe file)', 'FEKO (*.ffe file)');
-set(get(gca, 'XLabel'), 'String', ('y [m]'));
-set(get(gca, 'YLabel'), 'String', ('|Current| [A]'))
+% figure;
+% hold on;
+% grid on;
+% samples = [xVectors.Isol(32);xVectors.Isol(39);xVectors.Isol(35);xVectors.Isol(3);
+%     xVectors.Isol(109);xVectors.Isol(88);xVectors.Isol(96);xVectors.Isol(80)];
+% samples  = abs(samples);
+% num_samples = 8;
+% x_val = [1; 2;3;4;5;6;7;8];
+% x_val = x_val - 0.5;
+% x_val = x_val/53.33;
+% %plot(1:num_samples,samples,'LineWidth',3);
+% plot(x_val,samples,'LineWidth',3);
+% %legend('SUN-EM','FEKO (*.efe file)', 'FEKO (*.ffe file)');
+% set(get(gca, 'XLabel'), 'String', ('y [m]'));
+% set(get(gca, 'YLabel'), 'String', ('|Current| [A]'))
 
 %plot(1:FEKO_total_farfield_samples,FEKO_farfield_magnitude./max_FEKO_farfield_magnitude,'o','LineWidth',3);
 

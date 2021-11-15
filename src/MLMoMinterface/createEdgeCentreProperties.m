@@ -1,5 +1,5 @@
 %function prop = calcProp(Solver_setup, mmDir,nnDir,mmEdgeCenter, nnEdgeCenter )
-function [edgeCentreProperties] = calcProperties(Solver_setup)
+function [edgeCentreProperties] = createEdgeCentreProperties(Solver_setup)
 
     numEdges = Solver_setup.num_mom_basis_functions;
     

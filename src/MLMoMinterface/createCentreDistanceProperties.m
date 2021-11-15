@@ -1,8 +1,8 @@
-function centreDistances = calcCentreDistance(Solver_setup )
+function centreDistanceProperties = createCentreDistanceProperties(Solver_setup )
     
     numEdges = Solver_setup.num_mom_basis_functions;
     
-    centreDistances = zeros(numEdges,numEdges,4);
+    centreDistanceProperties = zeros(numEdges,numEdges,4);
     for mm = 1:numEdges
         %for nn = 1:numEdges
         for nn = mm:numEdges
@@ -18,8 +18,8 @@ function centreDistances = calcCentreDistance(Solver_setup )
             mmMinus_nnMinus = norm(mmMinusCentre-nnMinusCentre);
             
             %switch 
-            centreDistances(mm,nn, :) = [mmPlus_nnPlus, mmPlus_nnMinus, mmMinus_nnPlus, mmMinus_nnMinus];
-            centreDistances(nn,mm, :) = [mmPlus_nnPlus, mmMinus_nnPlus, mmPlus_nnMinus, mmMinus_nnMinus];
+            centreDistanceProperties(mm,nn, :) = [mmPlus_nnPlus, mmPlus_nnMinus, mmMinus_nnPlus, mmMinus_nnMinus];
+            centreDistanceProperties(nn,mm, :) = [mmPlus_nnPlus, mmMinus_nnPlus, mmPlus_nnMinus, mmMinus_nnMinus];
         end
     end
     

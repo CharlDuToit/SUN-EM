@@ -202,13 +202,18 @@ function prop = createProp(indices, newLinkOld, newProperties, oldProperties, ne
             for k = 1:numel(mmInd)
                 prop(k,:) = newProperties(mmInd(k), nnInd(k), :);
             end
-        case 2 %4 properties, new dist, new radial, old dist, old radial
+        case 2 %5 properties, new dist,new orientation, new radial, old dist, old radial
             %fourUnique_posInt, intInt
-            prop = zeros(numel(mmInd), 4);
+            prop = zeros(numel(mmInd), 5);
             for k = 1:numel(mmInd)
-                prop(k,1:2) = newProperties(mmInd(k), nnInd(k), [1 3]);
-                prop(k,3:4) = oldProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), [1 3]);
+                prop(k,1:3) = newProperties(mmInd(k), nnInd(k), [1 2 3]);
+                prop(k,4:5) = oldProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), [1 3]);
             end
+%             prop = zeros(numel(mmInd), 4);
+%             for k = 1:numel(mmInd)
+%                 prop(k,1:2) = newProperties(mmInd(k), nnInd(k), [1 3]);
+%                 prop(k,3:4) = oldProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), [1 3]);
+%             end
         case 3 %3 properties new dist, new radial, old radial
             %threeUnique posInt, intInt
             prop = zeros(numel(mmInd), 3);
@@ -259,6 +264,13 @@ function prop = createProp(indices, newLinkOld, newProperties, oldProperties, ne
                 prop(k,3) = newRhoProperties(mmInd(k), nnInd(k), 2);
                 prop(k,4) = oldRhoProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), 1);
                 prop(k,5) = oldRhoProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), 2);
+            end
+        case 10%4 properties, new dist, new radial, old dist, old radial
+            %fourUnique_posInt, intInt
+            prop = zeros(numel(mmInd), 4);
+            for k = 1:numel(mmInd)
+                prop(k,1:2) = newProperties(mmInd(k), nnInd(k), [1 3]);
+                prop(k,3:4) = oldProperties(newLinkOld(mmInd(k), nnInd(k), 1), newLinkOld(mmInd(k), nnInd(k), 2), [1 3]);
             end
     end
     

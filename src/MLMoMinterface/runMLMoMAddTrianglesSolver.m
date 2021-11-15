@@ -40,7 +40,7 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
     %narginchk(5,5);
     message_fc(Const,' ');
     message_fc(Const,'------------------------------------------------------------------------------------');
-    message_fc(Const,sprintf('Running ML-MoM solver'));
+    message_fc(Const,sprintf('Running ML-MoM-add-triangles solver'));
     
     % ======================= VARIABLE CONVENTION =======================
 
@@ -51,7 +51,7 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
     %includeRealCalc = Const.MLMoMIncludeRealCalc;
     
     %numFreq = zMatrices.numFreq;
-    numFreq = numel(Solver_setup.frequencies.freq_num);
+    numFreq = Solver_setup.frequencies.freq_num;
     
     %edgeLengths = Solver_setup.rwg_basis_functions_length_m;
     %numOldEdges = Solver_setup.num_mom_basis_functions;
@@ -68,11 +68,12 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
     % Extract old terms and properties
     %message_fc(Const, sprintf('  Calculating old solver setup matrices'));
     tic;
-    [oldTerms, oldSingInd] = fillZmnTermsByEdge(Const,Solver_setup);
-    oldCentreDistances = calcCentreDistance(Solver_setup );
-    oldProperties = calcProperties(Solver_setup);
+    oldCentreDistanceProperties = createCentreDistanceProperties(Solver_setup );
+    [oldTerms, oldSingInd] = fillZmnTermsByEdge(Const,Solver_setup, oldCentreDistanceProperties);
+    %[oldTerms, oldSingInd] = fillZmnTermsByEdge(Const,Solver_setup);
+    oldEdgeCentreProperties = createEdgeCentreProperties(Solver_setup);
     oldEdgeLengths = Solver_setup.rwg_basis_functions_length_m;
-    oldRhoProperties = calcRhoProperties(Solver_setup);
+    oldRhoProperties = createRhoProperties(Solver_setup);
     [~ , ~, numTerms] = size(oldTerms);
     oldZmnTime = toc;
     
@@ -89,18 +90,18 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
      % Project old terms to new terms
      message_fc(Const, sprintf('  Projecting old solver setup matrices '));
      tic;
-     newCentreDistances = calcCentreDistance(new_solver_setup );
+     newCentreDistancesProperties = createCentreDistanceProperties(new_solver_setup );
      [newTerms, newSingInd, newLinkOld, groupIndices] = ...
-         projectOldSolverSetup(new_solver_setup, Solver_setup,newEdgeLinkOldEdge, newEdgeParallelExternalEdgeLinkOldInternalEdge, oldTerms, oldSingInd, newCentreDistances, oldCentreDistances );
-     newProperties = calcProperties(new_solver_setup);
-     newRhoProperties = calcRhoProperties(new_solver_setup);
+         projectOldSolverSetup(new_solver_setup, Solver_setup,newEdgeLinkOldEdge, newEdgeParallelExternalEdgeLinkOldInternalEdge, oldTerms, oldSingInd, newCentreDistancesProperties, oldCentreDistanceProperties );
+     newEdgeCentreProperties = createEdgeCentreProperties(new_solver_setup);
+     newRhoProperties = createRhoProperties(new_solver_setup);
      projectTime = toc;
     
      % ======================= INIT CLUSTERS =======================
      % Initialise cluster means from new and old properties
      message_fc(Const, sprintf('  Initializing clusters '));
      tic;
-     groupMeans = initGroupMeans(groupIndices, newLinkOld, newProperties, oldProperties, newEdgeLengths, oldEdgeLengths ,newRhoProperties,oldRhoProperties, minClusterSize);
+     groupMeans = initGroupMeans(groupIndices, newLinkOld, newEdgeCentreProperties, oldEdgeCentreProperties, newEdgeLengths, oldEdgeLengths ,newRhoProperties,oldRhoProperties, minClusterSize);
      initClustersTime = toc;
      
      % ======================= CALC CLUSTERS =======================
@@ -120,33 +121,55 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
      Const.QUAD_PTS = quadPts;
      refZmnTime = toc;
 
-     % ======================= CALC WEIGHTS =======================
+     % ======================= CALC WEIGHTS, X, Y =======================
      % Calculate weights for real and imag at each frequency
      message_fc(Const, sprintf('  Calculating regression models '));
      tic;
+     %vectors
+     y = zeros(numNewEdges, numFreq);
+     refX = zeros(numNewEdges, numFreq);
+     predX = zeros(numNewEdges, numFreq);
      %erros
+     predXError = zeros(numFreq, 3);
      predFrobNorms = zeros(numFreq, 3);
      projFrobNorms = zeros(numFreq, 3);
      refFrobNorms = zeros(numFreq, 3);
      predRelNormPercentError = zeros(numFreq, 3);
-     errorSummary = cell(numFreq, 2); 
+     errorSummary = cell(numFreq, 3); 
      predRowRelNormPercentError = zeros(numNewEdges, numFreq);
      %weights
      weightModels = cell(numFreq, 2); % real and imaginary models
      predZmn = zeros(numNewEdges, numNewEdges,numFreq );
      projZmn = zeros(numNewEdges, numNewEdges,numFreq );
+     EMag = 1;
+     theta_0 = 0;
+     phi_0 = 0;
+             
+     %unityX(:,f) = unityZmn(:,:,f)\yVectors.values(:,f);
+        
      for f = 1:numFreq
+
          %weights
          [weightModels{f, 1},projZmnReal, predZmnReal ] = calcGroupWeights(groupIndices, real(newTerms(:,:,:,f)), real(refZmn(:,:,f)), singDataThresh);
          [weightModels{f, 2},projZmnImag ,predZmnImag ] = calcGroupWeights(groupIndices, imag(newTerms(:,:,:,f)), imag(refZmn(:,:,f)), singDataThresh);
          projZmn(:, :, f) = projZmnReal + 1i * projZmnImag;
          predZmn(:, :, f) = predZmnReal + 1i * predZmnImag;
          
+         %vectors
+         y(:,f) = FillVVector(Const, new_solver_setup, EMag,theta_0,phi_0);
+         predX(:,f) = predZmn(:,:,f)\y(:,f);
+         refX(:,f) = refZmn(:,:,f)\y(:,f);
+         [~,predXError(f,1)] = calcError(real(refX(:,f)),real(predX(:,f)));
+         [~,predXError(f,2)] = calcError(imag(refX(:,f)),imag(predX(:,f)));
+         [~,predXError(f,3)] = calcError(refX(:,f),predX(:,f));
+         
          %errors
          [compReal] = compareZmn(real(refZmn(:, :, f)), real(predZmn(:, :, f)), real(projZmn(:, :, f)), newSingInd);
          [compImag] = compareZmn(imag(refZmn(:, :, f)), imag(predZmn(:, :, f)), imag(projZmn(:, :, f)), newSingInd);
+         [compComplex] = compareZmn(refZmn(:, :, f), predZmn(:, :, f), projZmn(:, :, f), newSingInd);
          errorSummary{f,1} = compReal;
          errorSummary{f,2} = compImag;
+         errorSummary{f,3} = compComplex;
          
          predRelNormPercentError(f,1) = compReal.predRelNormPercentError;
          predRelNormPercentError(f,2)= compImag.predRelNormPercentError;
@@ -180,7 +203,7 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
      
      % ======================= ASSIGN  ======================= 
      tic
-     groupIndices = assignGroupClusters(groupMeans, groupIndices,newLinkOld, newProperties, oldProperties,newEdgeLengths, oldEdgeLengths, newRhoProperties, oldRhoProperties);
+     groupIndices = assignGroupClusters(groupMeans, groupIndices,newLinkOld, newEdgeCentreProperties, oldEdgeCentreProperties,newEdgeLengths, oldEdgeLengths, newRhoProperties, oldRhoProperties);
      assignTime = toc;
      
      %======================= MULTIPLY WEIGHTS  ======================= 
@@ -196,6 +219,7 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
      multiplyTime = toc;
      
     % ======================= DISPLAY TIMING DATA =======================
+    trainingTime = oldZmnTime + addTrianglesTime + projectTime + initClustersTime + calcClustersTime + refZmnTime + regressionTime;
     predictTime = oldZmnTime + addTrianglesTime + projectTime + assignTime + multiplyTime;
 
     message_fc(Const, sprintf('  Input z-Matrices calculation time: %.3f s',oldZmnTime));
@@ -205,11 +229,15 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
     message_fc(Const, sprintf('  Cluster calculation  time: %.3f s',calcClustersTime));
     message_fc(Const, sprintf('  Reference z-Matrices time: %.3f s',refZmnTime));
     message_fc(Const, sprintf('  Regression time: %.3f s',regressionTime));
+    message_fc(Const, sprintf('  Training time: %.3f s',trainingTime));
     message_fc(Const, sprintf('  Prediction time: %.3f s',predictTime));
     
      
 %     % ======================= UPDATE STRUCT  ======================= 
       mlmomAddTriangles = [];
+      mlmomAddTriangles.name = 'MLMOM-ADDTRIANGLES';
+      mlmomAddTriangles.numSols = numFreq;
+      mlmomAddTriangles.freqSamples = Solver_setup.frequencies.samples;
       
 %     %cells
       mlmomAddTriangles.weightModels =weightModels;
@@ -226,6 +254,11 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
       mlmomAddTriangles.projZmn = projZmn;
       mlmomAddTriangles.predZmn = predZmn;
       
+      mlmomAddTriangles.y = y;
+      mlmomAddTriangles.refX = refX;
+      mlmomAddTriangles.Isol = predX;
+      mlmomAddTriangles.predXError = predXError;
+      
       mlmomAddTriangles.predRelNormPercentError = predRelNormPercentError;
       mlmomAddTriangles.refFrobNorms = refFrobNorms;
       mlmomAddTriangles.projFrobNorms = projFrobNorms;
@@ -234,11 +267,11 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
       
       mlmomAddTriangles.newLinkOld = newLinkOld;
       
-      mlmomAddTriangles.newProperties = newProperties;
+      mlmomAddTriangles.newProperties = newEdgeCentreProperties;
       mlmomAddTriangles.newTerms = newTerms;
       mlmomAddTriangles.newSingInd = newSingInd;
 
-      mlmomAddTriangles.oldProperties = oldProperties;
+      mlmomAddTriangles.oldProperties = oldEdgeCentreProperties;
       mlmomAddTriangles.oldTerms = oldTerms;
       mlmomAddTriangles.oldSingInd = oldSingInd;
       
@@ -258,6 +291,7 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
       mlmomAddTriangles.regressionTime = regressionTime;
       mlmomAddTriangles.assignTime = assignTime;
       mlmomAddTriangles.multiplyTime = multiplyTime;
+      mlmomAddTriangles.trainingTime = trainingTime;
       mlmomAddTriangles.predictTime = predictTime;
       
 
@@ -288,6 +322,10 @@ function [mlmomAddTriangles] = runMLMoMAddTrianglesSolver(Const, Solver_setup)
 %         proj(k) = mlmomAddTriangles.projZmn(mmInd(k), nnInd(k), 1);
 %     end
        
+   % if (~isempty(Const.SUNEMmlmomstrfilename))
+        %writeSolToFile(Const, mlmomAddTriangles);
+   % end%if
+    
     message_fc(Const,...
         '------------------------------------------------------------------------------------');
 

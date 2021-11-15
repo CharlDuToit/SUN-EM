@@ -1,5 +1,5 @@
 %function prop = calcProp(Solver_setup, mmDir,nnDir,mmEdgeCenter, nnEdgeCenter )
-function [rhoProperties] = calcRhoProperties(Solver_setup)
+function [rhoProperties] = createRhoProperties(Solver_setup)
 
     numEdges = Solver_setup.num_mom_basis_functions;
     

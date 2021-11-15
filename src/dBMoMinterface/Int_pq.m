@@ -1,4 +1,4 @@
-function [Ipq,Ipq_xi,Ipq_eta,Ipq_zeta] = Int_pq(elements,node_coord, p,q,r_cp,k,quad_pts,sing)
+function [Ipq,Ipq_xi,Ipq_eta,Ipq_zeta] = Int_pq(elements,node_coord, p,q,r_cp,k,quad_pts,sing) %r_cp is triangle p center
 % INT_PQ returns the four integrals for faces (=elements) p and q,
 % corresponding to [eqs.34a-34d,RWG82]. Note that these integrals are
 % evaluated in normalized coordinates, and are not scaled by the area.

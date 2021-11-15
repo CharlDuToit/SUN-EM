@@ -36,7 +36,7 @@ function [Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVe
     
     % -- ML-MoM    
     if (Const.runMLMoMsolver)        
-        Solution.mlmom = runMLMoMsolver(Const, Solver_setup, zMatrices);
+        Solution.mlmom = runMLMoMsolver(Const, Solver_setup, zMatrices, yVectors, xVectors);
     end%if
     
     % -- ML-MoM Add Triangles   

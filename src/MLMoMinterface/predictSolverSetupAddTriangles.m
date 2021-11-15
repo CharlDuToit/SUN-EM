@@ -3,19 +3,19 @@ function [predictedSetup] = predictSolverSetupAddTriangles(Const, Solver_setup, 
     % Assume frequencies in solver_setup are the same
     
 
-    numFreq = 1;
+    numFreq = Solver_setup.frequencies.freq_num;
     message_fc(Const, sprintf('Predicting solver setup '));
 
     % ======================= EXTRACT OLD ======================= 
     % Extract old terms and properties
     %message_fc(Const, sprintf('  Calculating old solver setup matrices'));
     tic;
-    [oldTerms, oldSingInd] = fillZmnTermsByEdge(Const,Solver_setup);
-    oldCentreDistances = calcCentreDistance(Solver_setup );
-    oldProperties = calcProperties(Solver_setup);
-    oldRhoProperties = calcRhoProperties(Solver_setup);
+    oldCentreDistanceProperties = createCentreDistanceProperties(Solver_setup );
+    [oldTerms, oldSingInd] = fillZmnTermsByEdge(Const,Solver_setup, oldCentreDistanceProperties);
+    oldEdgeCentreProperties = createEdgeCentreProperties(Solver_setup);
+    oldRhoProperties = createRhoProperties(Solver_setup);
     oldEdgeLengths = Solver_setup.rwg_basis_functions_length_m;
-    [~ , ~, numTerms] = size(oldTerms);
+    %[~ , ~, numTerms] = size(oldTerms);
     oldZmnTime = toc;
     
         % ======================= ADD TRIANGLES ======================= 
@@ -31,19 +31,19 @@ function [predictedSetup] = predictSolverSetupAddTriangles(Const, Solver_setup, 
      % Project old terms to new terms
      message_fc(Const, sprintf('  Projecting old solver setup matrices '));
      tic;
-     newCentreDistances = calcCentreDistance(new_solver_setup );
+     newCentreDistanceProperties = createCentreDistanceProperties(new_solver_setup );
      [newTerms, newSingInd, newLinkOld, groupIndices] = ...
          projectOldSolverSetup(new_solver_setup, Solver_setup,newEdgeLinkOldEdge,...
-         newEdgeParallelExternalEdgeLinkOldInternalEdge, oldTerms, oldSingInd, newCentreDistances, oldCentreDistances );
-     newProperties = calcProperties(new_solver_setup);
-     newRhoProperties = calcRhoProperties(new_solver_setup);
+         newEdgeParallelExternalEdgeLinkOldInternalEdge, oldTerms, oldSingInd, newCentreDistanceProperties, oldCentreDistanceProperties );
+     newEdgeCentreProperties = createEdgeCentreProperties(new_solver_setup);
+     newRhoProperties = createRhoProperties(new_solver_setup);
      projectTime = toc;
      
      % ======================= ASSIGN  ======================= 
      tic
      message_fc(Const, sprintf('  Assigning clusters '));
-     groupIndices = assignGroupClusters(mlmomAddTriangles.groupMeans, groupIndices,newLinkOld, newProperties,...
-         oldProperties,newEdgeLengths, oldEdgeLengths, newRhoProperties, oldRhoProperties);
+     groupIndices = assignGroupClusters(mlmomAddTriangles.groupMeans, groupIndices,newLinkOld, newEdgeCentreProperties,...
+         oldEdgeCentreProperties,newEdgeLengths, oldEdgeLengths, newRhoProperties, oldRhoProperties);
      assignTime = toc;
      
      %=============== REFERENCE ZMN (if includeError)============ 
@@ -63,6 +63,16 @@ function [predictedSetup] = predictSolverSetupAddTriangles(Const, Solver_setup, 
      %======================= MULTIPLY WEIGHTS  ======================= 
      tic;
      message_fc(Const, sprintf('  Multiplying weights '));
+     
+     EMag = 1;
+     theta_0 = 0;
+     phi_0 = 0;
+     y = zeros(numNewEdges, numFreq);
+     refX = zeros(numNewEdges, numFreq);
+     predX = zeros(numNewEdges, numFreq);
+     %erros
+     predXError = zeros(numFreq, 3);
+     
      predZmn = zeros(numNewEdges, numNewEdges,numFreq );
      projZmn = zeros(numNewEdges, numNewEdges,numFreq );
      %Errors
@@ -80,7 +90,15 @@ function [predictedSetup] = predictSolverSetupAddTriangles(Const, Solver_setup, 
          projZmn(:, :, f) = projZmnReal + 1i * projZmnImag;
          predZmn(:, :, f) = predZmnReal + 1i * predZmnImag;
          
+         y(:,f) = FillVVector(Const, new_solver_setup, EMag,theta_0,phi_0);
+         predX(:,f) = predZmn(:,:,f)\y(:,f);
+         
          if (includeError)
+             refX(:,f) = refZmn(:,:,f)\y(:,f);
+             [~,predXError(f,1)] = calcError(real(refX(:,f)),real(predX(:,f)));
+             [~,predXError(f,2)] = calcError(imag(refX(:,f)),imag(predX(:,f)));
+             [~,predXError(f,3)] = calcError(refX(:,f),predX(:,f));
+             
              groupErrors{f,1} = groupErrorsReal;
              groupErrors{f,2} = groupErrorsImag;
              [compReal] = compareZmn(real(refZmn(:, :, f)), real(predZmn(:, :, f)), real(projZmn(:, :, f)), newSingInd);
@@ -116,6 +134,12 @@ function [predictedSetup] = predictSolverSetupAddTriangles(Const, Solver_setup, 
      %======================= UPDATE STRUCTURE   =======================
      predictedSetup = [];
      
+     predictedSetup.y = y;
+     predictedSetup.refX = refX;
+     predictedSetup.Isol = predX;
+     %erros
+     predictedSetup.predXError = predXError;
+     
      predictedSetup.groupIndices = groupIndices;
      predictedSetup.new_solver_setup = new_solver_setup;
      
@@ -137,11 +161,11 @@ function [predictedSetup] = predictSolverSetupAddTriangles(Const, Solver_setup, 
        
      predictedSetup.newLinkOld = newLinkOld;
      
-     predictedSetup.newProperties = newProperties;
+     predictedSetup.newProperties = newEdgeCentreProperties;
      predictedSetup.newTerms = newTerms;
      predictedSetup.newSingInd = newSingInd;
      
-     predictedSetup.oldProperties = oldProperties;
+     predictedSetup.oldProperties = oldEdgeCentreProperties;
      predictedSetup.oldTerms = oldTerms;
      predictedSetup.oldSingInd = oldSingInd;
      

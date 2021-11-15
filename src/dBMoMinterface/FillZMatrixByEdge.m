@@ -214,12 +214,12 @@ function [Z] = FillZMatrixByEdge(Const,Solver_setup)
                     Phi_mn_mns = Phi_mn_mns_source_pls + Phi_mn_mns_source_mns;
                            
                     % Assemble with eq. 17 in [RWG82]
-                    Z.values(mm,nn) = 1i*omega*...
+                    Z.values(mm,nn,freq_index) = 1i*omega*...
                         (dot(Amn_pls',rho_c_pls(mm,:))/2 + dot(Amn_mns',rho_c_mns(mm,:))/2) + Phi_mn_mns - Phi_mn_pls;
                     
                     %mm
                     %nn
-                    Z.values(mm,nn) = ell(mm)* Z.values(mm,nn);                    
+                    Z.values(mm,nn,freq_index) = ell(mm)* Z.values(mm,nn,freq_index);                    
                 end % if (~Zmn_calculated)
                 
             end % for nn = 1:NUM_DOFS

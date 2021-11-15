@@ -13,14 +13,14 @@ function [clusterMeans, clusterInd, clusterCounts,maxClusterError, totError, num
     %tol = t;
     
     %cluster indicies are still assigned to the previous means
-    [~, clusterInd,clusterCounts,maxClusterError, totError] = assignClusters(prop,clusterMeans, errorCode );
+    [~, clusterInd,clusterCounts,maxClusterError, totError, ~] = assignClusters(prop,clusterMeans, errorCode );
     tol = abs(oldTotError - totError)/totError;
     
 end
 
 function [clusterMeans, totError] = calcNewMeans(prop,clusterMeans, errorCode )
 
-    [clusterTotals, ~ ,clusterCounts,~, totError] = assignClusters(prop,clusterMeans, errorCode );
+    [clusterTotals, ~ ,clusterCounts,~, totError, ~] = assignClusters(prop,clusterMeans, errorCode );
     
     nonEmptyClusterInd = find(clusterCounts > 0);  
     numNonEmptyClusters = numel(nonEmptyClusterInd);

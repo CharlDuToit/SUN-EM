@@ -24,17 +24,20 @@ Const.FEKOoutfilename          = 'vivaldi_array.out';
 
 [Const, zMatrices, yVectors, xVectors] = extractFEKOMoMmatrixEq(Const);
 [Const, Solver_setup] = parseFEKOoutfile(Const, yVectors);
-Const.QUAD_PTS = 1;
+Const.QUAD_PTS = 12;
 Const.MLMoMClusterSizeScale = 1;
 Const.MLMoMMinPercentImprov = 0;
-Const.MLMoMIncludeRealCalc = 0;
-[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
-mlmom = Solution.mlmom;
+Const.MLMoMIncludeRealCalc = 1;
+Const.MLMoMConstMeshSize = 0;
+Const.SUNEMmlmomstrfilename = 'vivaldi_array.str';
+%[Solution] = runEMsolvers(Const, Solver_setup, zMatrices, yVectors, xVectors);
+%mlmom = Solution.mlmom;
 
 % first extract .mat files for ref Z and solver setup
 
-%refZmn_plate = zMatrices_plate.values;
-%[predZmn_plate, unityZmn_plate, singInd_plate] = predictSolverSetup(Const,Solver_setup_plate, mlmom,1);
-%[comp_real] = compareZmn(refZmn_plate, predZmn_plate,unityZmn_plate,singInd_plate, 1) ;
-%[comp_imag] = compareZmn(refZmn_plate, predZmn_plate, unityZmn_plate, singInd_plate, 0);
-
+ refStruct = [];
+ refStruct.xVectors = xVectors;
+ refStruct.yVectors = yVectors;
+ refStruct.zMatrices = zMatrices;
+[predictedSetup] = predictSolverSetup(Const, Solver_setup, reducedMLMoM, refStruct, 1);
+%writeSolToFile(Const, predictedSetup);
